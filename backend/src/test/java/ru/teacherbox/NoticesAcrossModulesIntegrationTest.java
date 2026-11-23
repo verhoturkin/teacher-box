@@ -23,7 +23,7 @@ import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.persistence.InboxRepository;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
-import ru.teacherbox.schedule.api.LessonSummaryShared;
+import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.shared.money.Money;
 
 /**
@@ -54,14 +54,15 @@ class NoticesAcrossModulesIntegrationTest {
         UUID lesson = UUID.randomUUID();
 
         transactions.executeWithoutResult(status -> {
-            events.publishEvent(new LessonSummaryShared(lesson, List.of(student), users.teacherId(),
-                    Instant.parse("2026-10-01T15:00:00Z"), Instant.now()));
+            events.publishEvent(new LessonStartingSoon(lesson, null, List.of(student),
+                    Instant.parse("2026-10-01T15:00:00Z"), 60, null, null, null, Duration.ofHours(1), false,
+                    Instant.now()));
             assertThat(inbox.findPage(student, 0, 10)).as("before the commit").isEmpty();
         });
 
         await().atMost(Duration.ofSeconds(10)).until(() -> !inbox.findPage(student, 0, 10).isEmpty());
         assertThat(inbox.findPage(student, 0, 10)).singleElement().satisfies(notification -> {
-            assertThat(notification.kind()).isEqualTo(NotificationKind.LESSON_SUMMARY);
+            assertThat(notification.kind()).isEqualTo(NotificationKind.SCHEDULE_REMINDER);
             assertThat(notification.link()).isEqualTo("/cabinet/schedule?lesson=" + lesson);
         });
     }

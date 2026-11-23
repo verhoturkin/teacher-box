@@ -61,7 +61,7 @@ interface UsagePart {
 /**
  * The settings category «ИИ-помощник» (sketch Ai, ADR-0057): the connections with their models and the
  * default one, the month's usage split by model with the monthly limit, the log of recent requests, the
- * library of prompts (the editor's «Промты» menu leads here) and the system prompts.
+ * library of prompts (the editor's «Промпты» menu leads here) and the system prompts.
  */
 @Component({
   selector: 'tb-ai-settings-panel',

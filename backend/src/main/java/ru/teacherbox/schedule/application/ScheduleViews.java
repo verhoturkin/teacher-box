@@ -53,7 +53,6 @@ public final class ScheduleViews {
      * @param originalStartsAt the time the lesson was first planned for, if it moved
      * @param pendingRequests  unanswered requests of the participants about this lesson
      * @param summary          «what we covered», filled only in the details of one lesson
-     * @param nextPlan         «what next», the teacher's details only
      * @param notes            private notes per student, the teacher's details only
      * @param planId           the lesson plan on the lesson (ADR-0071); {@code null} — none. It may point to a
      *                         deleted plan: the plan endpoints answer 404 then
@@ -87,7 +86,6 @@ public final class ScheduleViews {
             @Nullable Long repeatVersion,
             @Nullable LocalDate occurrenceDate,
             @Nullable String summary,
-            @Nullable String nextPlan,
             @Nullable Instant summaryUpdatedAt,
             List<NoteView> notes,
             @Nullable UUID planId,
@@ -105,7 +103,7 @@ public final class ScheduleViews {
                     lesson.cancelReason(),
                     lesson.originalStartsAt(), List.copyOf(pendingRequests), lesson.version(),
                     rule == null ? 0 : rule.intervalWeeks(), rule == null ? null : rule.endsOn(),
-                    rule == null ? null : rule.version(), lesson.seriesDate(), null, null, null, List.of(),
+                    rule == null ? null : rule.version(), lesson.seriesDate(), null, null, List.of(),
                     lesson.planId(), lesson.assignmentIds());
         }
 
@@ -116,26 +114,26 @@ public final class ScheduleViews {
                     seriesId, startsAt, endsAt, durationMinutes, title, topic, meetingUrl, joinUrl, status, cancelledBy,
                     cancelReason, originalStartsAt,
                     pendingRequests.stream().filter(request -> request.studentId().equals(participantId)).toList(),
-                    version, repeatWeeks, repeatUntil, repeatVersion, occurrenceDate, summary, null, summaryUpdatedAt,
+                    version, repeatWeeks, repeatUntil, repeatVersion, occurrenceDate, summary, summaryUpdatedAt,
                     List.of(), planId, List.of());
         }
 
-        /** The teacher's details: the summary, the plan and the private notes (the lists carry none of them). */
+        /** The teacher's details: the summary and the private notes (the lists carry none of them). */
         LessonView withSummary(Lesson lesson, List<LessonNote> found) {
             return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName, participants, seriesId,
                     startsAt, endsAt, durationMinutes, title, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
                     originalStartsAt, pendingRequests, version, repeatWeeks, repeatUntil, repeatVersion,
-                    occurrenceDate, lesson.summary(), lesson.nextPlan(), lesson.summaryUpdatedAt(),
+                    occurrenceDate, lesson.summary(), lesson.summaryUpdatedAt(),
                     found.stream().map(note -> new NoteView(note.studentId(), note.note(), note.updatedAt())).toList(),
                     planId, assignmentIds);
         }
 
-        /** A student sees the shared summary of their lesson, never the plan or the notes. */
+        /** A student sees the summary of their lesson, never the notes. */
         LessonView withStudentSummary(Lesson lesson) {
             return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName, participants, seriesId,
                     startsAt, endsAt, durationMinutes, title, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
                     originalStartsAt, pendingRequests, version, repeatWeeks, repeatUntil, repeatVersion,
-                    occurrenceDate, lesson.summary(), null, lesson.summaryUpdatedAt(), List.of(), planId,
+                    occurrenceDate, lesson.summary(), lesson.summaryUpdatedAt(), List.of(), planId,
                     List.of());
         }
     }
@@ -146,13 +144,12 @@ public final class ScheduleViews {
      * @param attendance the student's attendance; {@code null} in a group feed
      * @param summary    «Что прошли»; with a {@code planId} only the deviations from the plan, {@code null} — all by
      *                   the plan (466.3)
-     * @param nextPlan   the teacher's feeds only
      * @param note       the teacher's private note about the student; the student feed never has it
      */
     public record HistoryEntry(UUID lessonId, Instant startsAt, @Nullable String title, @Nullable String topic,
             LessonStatus status,
             @Nullable UUID groupId, @Nullable String groupName, @Nullable Attendance attendance,
-            @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
+            @Nullable String summary, @Nullable Instant summaryUpdatedAt,
             @Nullable String note, @Nullable UUID planId) {
     }
 

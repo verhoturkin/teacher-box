@@ -2,5 +2,4 @@
 <lesson>
 Тема урока: {{topic}}
 Итоги прошлого урока: {{previousSummary}}
-Что наметили на этот урок: {{previousNextPlan}}
 </lesson>

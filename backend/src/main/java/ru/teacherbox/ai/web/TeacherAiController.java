@@ -126,8 +126,7 @@ class TeacherAiController {
      */
     record LessonRequest(
             @Size(max = 500) @Nullable String topic,
-            @Size(max = 4_000) @Nullable String previousSummary,
-            @Size(max = 1_000) @Nullable String previousNextPlan) {
+            @Size(max = 4_000) @Nullable String previousSummary) {
     }
 
     /**
@@ -235,8 +234,7 @@ class TeacherAiController {
     private LessonPlanDraft lessonPlan(LessonPlanRequest request, List<DraftSources.Source> uploads) {
         LessonRequest lesson = request.lesson();
         return assistant.lessonPlan(new LessonPlanBrief(request.prompt(), request.courseName(),
-                lesson == null ? null : new LessonFacts(lesson.topic(), lesson.previousSummary(),
-                        lesson.previousNextPlan()),
+                lesson == null ? null : new LessonFacts(lesson.topic(), lesson.previousSummary()),
                 sources(request.sources(), uploads), notes(request.context()), request.modelId()));
     }
 

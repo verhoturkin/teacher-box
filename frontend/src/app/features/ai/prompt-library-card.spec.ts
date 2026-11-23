@@ -38,7 +38,7 @@ describe('PromptLibraryCard', () => {
 
   async function pick(host: HTMLElement, prompt: string, item: string): Promise<void> {
     host
-      .querySelector<HTMLButtonElement>(`button[aria-label="Действия с промтом «${prompt}»"]`)
+      .querySelector<HTMLButtonElement>(`button[aria-label="Действия с промптом «${prompt}»"]`)
       ?.click();
     await fixture.whenStable();
     [...document.body.querySelectorAll<HTMLElement>('.p-menu-item-label')]
@@ -66,14 +66,14 @@ describe('PromptLibraryCard', () => {
   it('says when the library is empty', async () => {
     const { host } = await render([]);
 
-    expect(readableText(host)).toContain('Промтов пока нет');
+    expect(readableText(host)).toContain('Промптов пока нет');
   });
 
   it('changes a prompt', async () => {
     const { card, host } = await render();
 
     await pick(host, 'Перевод', 'Изменить…');
-    expect(bodyText()).toContain('Промт');
+    expect(bodyText()).toContain('Промпт');
     card.form.patchValue({ title: ' ' });
     buttonByText(document.body, 'Сохранить').click();
     backend.expectNone('/api/teacher/ai/prompts/p-2');

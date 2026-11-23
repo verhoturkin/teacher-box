@@ -81,8 +81,7 @@ class TeacherScheduleController {
             @Nullable Long repeatVersion) {
     }
 
-    record SummaryRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String summary,
-            @Size(max = Lesson.MAX_NEXT_PLAN) @Nullable String nextPlan) {
+    record SummaryRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String summary) {
     }
 
     /** @param planId a working lesson plan of {@code textbooks}; {@code null} takes the plan off */
@@ -206,13 +205,7 @@ class TeacherScheduleController {
 
     @PutMapping("/lessons/{lessonId}/summary")
     LessonView summary(@PathVariable UUID lessonId, @Valid @RequestBody SummaryRequest request) {
-        return schedule.updateSummary(lessonId, request.summary(), request.nextPlan());
-    }
-
-    @PostMapping("/lessons/{lessonId}/summary/share")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    void shareSummary(@PathVariable UUID lessonId) {
-        schedule.shareSummary(lessonId);
+        return schedule.updateSummary(lessonId, request.summary());
     }
 
     /** Held lessons of a student, newest first; the next page — {@code before} = start of the last one. */

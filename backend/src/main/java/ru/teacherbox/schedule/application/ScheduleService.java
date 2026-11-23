@@ -168,35 +168,13 @@ public class ScheduleService {
         return queries.lesson(lesson.id());
     }
 
-    /**
-     * Writes the summary and the plan of a lesson (blank clears). A non-empty plan goes into the topic of
-     * the next planned lesson of the same participants if that topic is empty; a filled one stays.
-     */
+    /** Writes «what we covered» of a lesson (blank clears); the participants read it in their history. */
     @Transactional
-    public LessonView updateSummary(UUID lessonId, @Nullable String summary, @Nullable String nextPlan) {
+    public LessonView updateSummary(UUID lessonId, @Nullable String summary) {
         Lesson lesson = find(lessonId);
-        lesson.writeSummary(summary, nextPlan, clock.instant());
+        lesson.writeSummary(summary, clock.instant());
         lessons.updateSummary(lesson);
-        String plan = lesson.nextPlan();
-        if (plan != null) {
-            String topic = plan.length() > Lesson.MAX_TOPIC ? plan.substring(0, Lesson.MAX_TOPIC) : plan;
-            lessons.findNextPlanned(lesson).ifPresent(next -> lessons.fillEmptyTopic(next.id(), topic));
-        }
         return queries.lesson(lessonId);
-    }
-
-    /**
-     * Sends the summary to the participants. Without a lesson plan an empty summary is not sent; with one the
-     * summary holds only the deviations, so an empty one means «all by the plan» and is sent (466.3).
-     */
-    @Transactional
-    public void shareSummary(UUID lessonId) {
-        Lesson lesson = find(lessonId);
-        lesson.requireSummarizable(clock.instant());
-        if (lesson.summary() == null && lesson.planId() == null) {
-            throw new BusinessRuleException("schedule.summary-empty", "Write the summary before sending it");
-        }
-        lessonEvents.summaryShared(lesson, directory.teacherId(), clock.instant());
     }
 
     /** Deletes a lesson that was not held: a planned or cancelled one nobody is charged for. */

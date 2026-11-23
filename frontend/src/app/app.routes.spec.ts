@@ -461,11 +461,11 @@ describe('app routes', { timeout: 20_000 }, () => {
           topic: 'T',
           startsAt: '2026-01-01T10:00:00Z',
         },
-        [{ summary: 'Было', nextPlan: 'Дальше' }],
+        [{ summary: 'Было' }],
       ),
     ).toEqual({
       studentIds: ['s-1'],
-      facts: { topic: 'T', previousSummary: 'Было', previousNextPlan: 'Дальше' },
+      facts: { topic: 'T', previousSummary: 'Было' },
     });
     expect(
       await read(
@@ -480,7 +480,7 @@ describe('app routes', { timeout: 20_000 }, () => {
       ),
     ).toEqual({
       studentIds: ['s-2', 's-3'],
-      facts: { topic: null, previousSummary: null, previousNextPlan: null },
+      facts: { topic: null, previousSummary: null },
     });
     expect(
       await read(
@@ -489,7 +489,7 @@ describe('app routes', { timeout: 20_000 }, () => {
       ),
     ).toEqual({
       studentIds: [],
-      facts: { topic: null, previousSummary: null, previousNextPlan: null },
+      facts: { topic: null, previousSummary: null },
     });
     backend.match(() => true);
   });

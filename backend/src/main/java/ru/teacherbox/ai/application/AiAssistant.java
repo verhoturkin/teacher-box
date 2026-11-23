@@ -50,7 +50,7 @@ public class AiAssistant {
     static final String LESSON_SUMMARY_PLAN_PROMPT = "lesson-summary-plan.v1";
     static final String QUIZ_PROMPT = "quiz-draft.user.v2";
     static final String LESSON_PLAN_PROMPT = "lesson-plan.user.v1";
-    static final String LESSON_PROMPT = "lesson-context.v1";
+    static final String LESSON_PROMPT = "lesson-context.v2";
     static final String PERIOD_SUMMARY_PROMPT = "period-summary.user.v1";
     static final String STUDENTS_PROMPT = "student-context.v1";
     static final int MAX_TITLE = 200;
@@ -226,8 +226,7 @@ public class AiAssistant {
     private String lesson(@Nullable LessonFacts lesson) {
         return lesson == null ? "" : prompts.render(LESSON_PROMPT, Map.of(
                 "topic", orDash(lesson.topic()),
-                "previousSummary", orDash(lesson.previousSummary()),
-                "previousNextPlan", orDash(lesson.previousNextPlan())));
+                "previousSummary", orDash(lesson.previousSummary())));
     }
 
     /**

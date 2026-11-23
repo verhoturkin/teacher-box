@@ -29,6 +29,9 @@ Feature proposals with detailed plans (progress report, packages, invoices, pare
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
 
+Left from 0.62.2 (469): the one autosaving «Что прошли» card was not checked live in the
+browser, and the e2e suite was only type-checked.
+
 Left from 0.62.1 (468): a video with captions in one language was checked live only by the
 teacher; «Мои запросы» of the plan's AI pane was not checked live (no AI on the dev instance).
 A deactivated student who stays a member of a group may come back into lessons a group series

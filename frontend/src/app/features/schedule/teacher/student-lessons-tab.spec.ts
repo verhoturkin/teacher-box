@@ -41,7 +41,6 @@ function entry(overrides: Partial<HistoryEntry> = {}): HistoryEntry {
     groupName: null,
     attendance: null,
     summary: null,
-    nextPlan: null,
     summaryUpdatedAt: null,
     note: null,
     planId: null,
@@ -235,7 +234,6 @@ describe('StudentLessonsTab', () => {
       lessonId: 'full',
       title: 'Дроби',
       summary: 'Сложили **дроби**',
-      nextPlan: 'Разобрать степени',
       note: 'Быстро устаёт',
       attendance: 'ATTENDED',
     });
@@ -261,7 +259,7 @@ describe('StudentLessonsTab', () => {
     await answer([], [full, group, missed, byPlan]);
 
     expect(rows('История')).toEqual([
-      `${formatLessonStart(full.startsAt)} Дроби Что прошли Сложили дроби Что дальше Разобрать степени Заметка для себя Быстро устаёт Проведено`,
+      `${formatLessonStart(full.startsAt)} Дроби Что прошли Сложили дроби Заметка для себя Быстро устаёт Проведено`,
       `${formatLessonStart(group.startsAt)} Группа «ОГЭ» · Тема не задана Пропуск`,
       `${formatLessonStart(missed.startsAt)} Тема не задана Пропуск`,
       `${formatLessonStart(byPlan.startsAt)} Тема не задана Прошли по плану Не по плану Не успели упр. 5 Проведено`,

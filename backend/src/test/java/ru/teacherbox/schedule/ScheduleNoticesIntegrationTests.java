@@ -29,7 +29,6 @@ import ru.teacherbox.schedule.api.LessonRescheduled;
 import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
-import ru.teacherbox.schedule.api.LessonSummaryShared;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.i18n.Language;
@@ -325,20 +324,6 @@ class ScheduleNoticesIntegrationTests {
             assertThat(notice.kind()).isEqualTo("SCHEDULE_CALENDAR");
             assertThat(notice.link()).isEqualTo("/teacher/settings?open=calendar");
         });
-    }
-
-    @Test
-    void aSharedSummaryReachesTheParticipants(AssertablePublishedEvents events) {
-        UUID anna = directory.addStudent("Анна");
-        UUID boris = directory.addStudent("Борис");
-        UUID lesson = UUID.randomUUID();
-        NoticeRequested shared = latest(events, anna,
-                new LessonSummaryShared(lesson, List.of(anna), directory.teacherId(), START, Instant.now()));
-        assertThat(shared.kind()).isEqualTo("LESSON_SUMMARY");
-        assertThat(ru(shared).title()).isEqualTo("Итоги урока 01.10");
-        assertThat(shared.link()).isEqualTo("/cabinet/schedule?lesson=" + lesson);
-        assertThat(ru(shared).body()).doesNotContain("Past");
-        assertThat(notices(events, boris)).isEmpty();
     }
 
     @Test

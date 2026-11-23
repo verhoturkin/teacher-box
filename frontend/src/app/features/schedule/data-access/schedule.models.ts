@@ -98,8 +98,6 @@ export interface ScheduledLesson {
   readonly assignmentIds: readonly string[];
   /** «Что прошли», Markdown; filled in the details of one lesson. */
   readonly summary?: string | null;
-  /** «Что дальше»; the teacher's details only. */
-  readonly nextPlan?: string | null;
   readonly summaryUpdatedAt?: string | null;
   /** The teacher's private notes per student; the teacher's details only. */
   readonly notes?: readonly LessonNote[];
@@ -355,7 +353,6 @@ export interface HistoryEntry {
   readonly attendance: Attendance | null;
   /** «Что прошли»; with `planId` only the deviations from the plan, `null` — all by the plan. */
   readonly summary: string | null;
-  readonly nextPlan: string | null;
   readonly summaryUpdatedAt: string | null;
   /** The teacher's private note about the student; absent in a group feed. */
   readonly note: string | null;
@@ -379,7 +376,6 @@ export interface PeriodLesson {
   readonly cancelledBy: CancelledBy | null;
   /** «Что прошли», shared by the whole lesson; with `planId` only the deviations from the plan. */
   readonly summary: string | null;
-  readonly nextPlan: string | null;
   readonly planId: string | null;
   readonly assignmentIds: readonly string[];
 }

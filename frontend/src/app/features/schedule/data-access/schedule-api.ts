@@ -179,15 +179,11 @@ export class ScheduleApi {
     return this.http.delete<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/outcome`);
   }
 
-  /** Saves «Что прошли» and «Что дальше» (an empty text clears the field). */
-  updateSummary(
-    lessonId: string,
-    summary: string | null,
-    nextPlan: string | null,
-  ): Observable<ScheduledLesson> {
+  /** Saves «Что прошли» (an empty text clears it). */
+  updateSummary(lessonId: string, summary: string | null): Observable<ScheduledLesson> {
     return this.http.put<ScheduledLesson>(
       `/api/teacher/schedule/lessons/${lessonId}/summary`,
-      { summary, nextPlan },
+      { summary },
       QUIET,
     );
   }
@@ -222,13 +218,6 @@ export class ScheduleApi {
       `/api/teacher/schedule/lessons/${lessonId}/homework/${assignmentId}`,
       QUIET,
     );
-  }
-
-  /** Sends the summary to the participants as «Итоги урока». */
-  shareSummary(lessonId: string): Observable<void> {
-    return this.http
-      .post(`/api/teacher/schedule/lessons/${lessonId}/summary/share`, null, QUIET)
-      .pipe(map(() => undefined));
   }
 
   /** Lessons that have ended without a marked outcome. */

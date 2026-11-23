@@ -106,8 +106,7 @@ public final class AiViews {
     }
 
     /** The lesson a plan is for: its topic and what the previous lesson left. */
-    public record LessonFacts(@Nullable String topic, @Nullable String previousSummary,
-            @Nullable String previousNextPlan) {
+    public record LessonFacts(@Nullable String topic, @Nullable String previousSummary) {
     }
 
     /**

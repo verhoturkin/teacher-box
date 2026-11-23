@@ -280,7 +280,6 @@ POST /api/teacher/schedule/lessons TEACHER
 POST /api/teacher/schedule/lessons/{lessonId}/cancel TEACHER
 POST /api/teacher/schedule/lessons/{lessonId}/homework TEACHER
 POST /api/teacher/schedule/lessons/{lessonId}/restore TEACHER
-POST /api/teacher/schedule/lessons/{lessonId}/summary/share TEACHER
 POST /api/teacher/schedule/off-times TEACHER
 POST /api/teacher/schedule/requests/{requestId}/approve TEACHER
 POST /api/teacher/schedule/requests/{requestId}/decline TEACHER

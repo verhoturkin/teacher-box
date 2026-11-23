@@ -440,7 +440,6 @@ describe('MySchedulePage lesson summaries', () => {
     groupName: null,
     attendance: null,
     summary: null,
-    nextPlan: null,
     summaryUpdatedAt: null,
     note: null,
     planId: null,

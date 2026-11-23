@@ -84,19 +84,17 @@ class PeriodSummaryIntegrationTests {
         when(lessons.ofStudent(STUDENT, FROM, TO)).thenReturn(List.of(
                 // 21:30 UTC is 00:30 of the next day in Moscow, the teacher's time zone
                 lesson("2026-10-04T21:30:00Z", "Past Simple", null, LessonOutcome.ATTENDED, null,
-                        "с".repeat(1_100), "Неправильные глаголы", plan),
-                lesson("2026-10-07T15:00:00Z", null, UUID.randomUUID(), LessonOutcome.EXCUSED, null, null, null, null),
-                lesson("2026-10-09T15:00:00Z", null, null, LessonOutcome.CANCELLED, CancelledBy.STUDENT, null, null,
-                        null),
+                        "с".repeat(1_100), plan),
+                lesson("2026-10-07T15:00:00Z", null, UUID.randomUUID(), LessonOutcome.EXCUSED, null, null, null),
+                lesson("2026-10-09T15:00:00Z", null, null, LessonOutcome.CANCELLED, CancelledBy.STUDENT, null, null),
                 lesson("2026-10-11T15:00:00Z", null, null, LessonOutcome.LATE_CANCELLED, CancelledBy.STUDENT, null,
-                        null, null),
-                lesson("2026-10-13T15:00:00Z", null, null, LessonOutcome.MISSED, null, "Повторение", null, null),
-                lesson("2026-10-15T15:00:00Z", null, null, LessonOutcome.CANCELLED, CancelledBy.TEACHER, null, null,
                         null),
-                lesson("2026-10-20T15:00:00Z", null, null, LessonOutcome.ATTENDED, null, null, null, byPlan),
-                lesson("2026-10-22T15:00:00Z", null, null, LessonOutcome.ATTENDED, null, "Только чтение", null,
+                lesson("2026-10-13T15:00:00Z", null, null, LessonOutcome.MISSED, null, "Повторение", null),
+                lesson("2026-10-15T15:00:00Z", null, null, LessonOutcome.CANCELLED, CancelledBy.TEACHER, null, null),
+                lesson("2026-10-20T15:00:00Z", null, null, LessonOutcome.ATTENDED, null, null, byPlan),
+                lesson("2026-10-22T15:00:00Z", null, null, LessonOutcome.ATTENDED, null, "Только чтение",
                         UUID.randomUUID()),
-                lesson("2026-10-30T15:00:00Z", null, null, LessonOutcome.PLANNED, null, null, null, null)));
+                lesson("2026-10-30T15:00:00Z", null, null, LessonOutcome.PLANNED, null, null, null)));
         when(plans.find(any())).thenReturn(List.of(new LessonPlanView(byPlan, "Present Simple", "", null, false,
                 List.of(), List.of()), new LessonPlanView(plan, "План Past Simple", "Тело плана", null,
                 false, List.of(
@@ -129,8 +127,7 @@ class PeriodSummaryIntegrationTests {
                 .contains("<students>\nКласс: 7\n</students>", "Период: с 01.10.2026 по 31.10.2026.",
                         "— 05.10.2026 00:30, 60 мин; тема: Past Simple; был на уроке\n"
                                 + "  План урока: «План Past Simple»; учебники: «Spotlight 5» с. 12-13, «Тетрадь»;"
-                                + " видео: «Routines»\n  Не по плану: " + "с".repeat(1_000)
-                                + "\n  На следующий урок: Неправильные глаголы\n",
+                                + " видео: «Routines»\n  Не по плану: " + "с".repeat(1_000) + "\n",
                         "— 20.10.2026 18:00, 60 мин; был на уроке\n  План урока: «Present Simple»\n"
                                 + "  Прошли по плану\n",
                         "— 22.10.2026 18:00, 60 мин; был на уроке\n  Не по плану: Только чтение\n",
@@ -158,7 +155,7 @@ class PeriodSummaryIntegrationTests {
         List<JournalLesson> many = new ArrayList<>();
         IntStream.rangeClosed(0, 60).forEach(i -> many.add(lesson(Instant.parse("2026-10-01T06:00:00Z")
                 .plus(Duration.ofMinutes(i * 30L)).toString(), "Урок " + i, null, LessonOutcome.ATTENDED, null, null,
-                null, null)));
+                null)));
         when(lessons.ofStudent(STUDENT, FROM, TO)).thenReturn(many);
         when(homework.ofStudent(STUDENT, FROM, TO)).thenReturn(IntStream.rangeClosed(0, 60)
                 .mapToObj(i -> task("Задание " + i, "2026-10-02T10:00:00Z", null, JournalTask.Status.ASSIGNED, null,
@@ -213,9 +210,9 @@ class PeriodSummaryIntegrationTests {
 
     private static JournalLesson lesson(String startsAt, @Nullable String topic, @Nullable UUID groupId,
             LessonOutcome outcome, @Nullable CancelledBy cancelledBy, @Nullable String summary,
-            @Nullable String nextPlan, @Nullable UUID planId) {
+            @Nullable UUID planId) {
         return new JournalLesson(UUID.randomUUID(), Instant.parse(startsAt), 60, groupId == null ? null : "Урок",
-                topic, groupId, outcome, cancelledBy, summary, nextPlan, planId, List.of());
+                topic, groupId, outcome, cancelledBy, summary, planId, List.of());
     }
 
     private static JournalTask task(String title, String assignedAt, @Nullable String dueAt,

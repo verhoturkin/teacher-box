@@ -5,7 +5,7 @@ import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { AiProvider } from '@features/ai/parts';
 import { aiModel, aiProvider, answerModels } from '@testing/ai-fixtures';
 import { assignmentSummary } from '@testing/homework-fixtures';
-import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
+import { scheduledLesson } from '@testing/schedule-fixtures';
 import { aLessonPlan } from '@testing/textbooks-fixtures';
 import { testProviders } from '@testing/setup';
 import { ScheduledLesson } from '../data-access/schedule.models';
@@ -15,7 +15,6 @@ const STATUS = '/api/teacher/ai/status';
 const DRAFT = '/api/teacher/ai/lesson-summary';
 const ASSIGNMENTS = '/api/teacher/homework/assignments';
 const SUMMARY = '/api/teacher/schedule/lessons/l-1/summary';
-const SHARE = '/api/teacher/schedule/lessons/l-1/summary/share';
 const PLAN = '/api/teacher/textbooks/plans/p-1';
 
 describe('LessonSummarySection', () => {
@@ -23,18 +22,17 @@ describe('LessonSummarySection', () => {
   let ai: boolean;
   let backend: HttpTestingController;
   let saved: ScheduledLesson[];
-  let success: ReturnType<typeof vi.spyOn>;
   let failure: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [LessonSummarySection], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
-    success = vi.spyOn(TestBed.inject(Snackbar), 'success');
     failure = vi.spyOn(TestBed.inject(Snackbar), 'error');
     ai = false;
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     backend.verify();
     fixture.destroy();
   });
@@ -63,95 +61,79 @@ describe('LessonSummarySection', () => {
     await fixture.whenStable();
   }
 
-  it('prefills «Что прошли» with the topic while no summary is saved', async () => {
+  /** Picks «По плану» or «Не всё по плану» (the whole label: one is a part of the other). */
+  async function mode(label: string): Promise<void> {
+    const option = Array.from(document.body.querySelectorAll<HTMLElement>('p-togglebutton')).find(
+      (candidate) => candidate.textContent.trim() === label,
+    );
+    if (option === undefined) {
+      throw new Error(`Mode "${label}" not found`);
+    }
+    option.click();
+    await fixture.whenStable();
+  }
+
+  /** The picked button of «По плану | Не всё по плану». */
+  const pressedMode = (): string =>
+    document.body.querySelector('.tb-lesson-summary .p-togglebutton-checked')?.textContent.trim() ??
+    '';
+
+  it('is one card «Что прошли» with an empty field, no sending and no next-lesson topic', async () => {
     await open(scheduledLesson({ topic: 'Past Simple' }));
 
-    expect(field('#lesson-summary-text').value).toBe('Past Simple');
+    expect(field('#lesson-summary-text').value).toBe('');
+    expect(bodyText()).toContain('Что прошли');
     expect(bodyText()).toContain('Видно ученикам этого занятия');
+    expect(bodyText()).not.toContain('Тема следующего занятия');
+    expect(bodyText()).not.toContain('Отправить');
+    expect(bodyText()).not.toContain('Сохранить');
+    expect(document.body.querySelector('p-selectbutton')).toBeNull();
   });
 
-  it('shows the saved summary and plan rather than the topic', async () => {
-    await open(scheduledLesson({ topic: 'Тема', summary: 'Было', nextPlan: 'План' }));
+  it('shows the saved summary and writes nothing on its own', async () => {
+    await open(scheduledLesson({ topic: 'Тема', summary: 'Было' }));
 
     expect(field('#lesson-summary-text').value).toBe('Было');
-    expect(field('#lesson-summary-next').value).toBe('План');
-    expect(buttonByText(document.body, 'Сохранить').disabled).toBe(true);
+    fixture.destroy();
+    backend.expectNone(SUMMARY);
   });
 
-  it('saves the changed fields at «Сохранить» and shares nothing', async () => {
+  it('saves the text a moment after the teacher stops typing', async () => {
     await open(scheduledLesson());
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await type('#lesson-summary-text', ' Past ');
     await type('#lesson-summary-text', ' Past Simple ');
-    await type('#lesson-summary-next', 'Past Continuous');
     backend.expectNone(SUMMARY);
 
-    await press('Сохранить');
+    vi.advanceTimersByTime(1500);
     const request = backend.expectOne(SUMMARY);
     expect(request.request.method).toBe('PUT');
-    expect(request.request.body).toEqual({ summary: 'Past Simple', nextPlan: 'Past Continuous' });
-    const updated = scheduledLesson({ summary: 'Past Simple', nextPlan: 'Past Continuous' });
+    expect(request.request.body).toEqual({ summary: 'Past Simple' });
+    const updated = scheduledLesson({ summary: 'Past Simple' });
     request.flush(updated);
     await fixture.whenStable();
 
-    backend.expectNone(SHARE);
     expect(saved).toEqual([updated]);
-    expect(success).toHaveBeenCalledWith('Итоги сохранены');
+    expect(bodyText()).toMatch(/сохранено · \d\d:\d\d/);
   });
 
-  it('clears an emptied field', async () => {
-    await open(scheduledLesson({ summary: 'Было', nextPlan: 'План' }));
+  it('saves what is left at once when the card closes, an emptied field as nothing', async () => {
+    await open(scheduledLesson({ summary: 'Было' }));
     await type('#lesson-summary-text', '  ');
-    await type('#lesson-summary-next', '');
 
-    await press('Сохранить');
-
+    fixture.destroy();
     const request = backend.expectOne(SUMMARY);
-    expect(request.request.body).toEqual({ summary: null, nextPlan: null });
+    expect(request.request.body).toEqual({ summary: null });
     request.flush(scheduledLesson());
-  });
-
-  it('sends the prefilled topic: the write first, then the share', async () => {
-    await open(scheduledLesson({ topic: 'Past Simple' }));
-
-    await press('Отправить ученику');
-    backend.expectNone(SHARE);
-    const updated = scheduledLesson({ topic: 'Past Simple', summary: 'Past Simple' });
-    const request = backend.expectOne(SUMMARY);
-    expect(request.request.body).toEqual({ summary: 'Past Simple', nextPlan: null });
-    request.flush(updated);
-    await fixture.whenStable();
-    backend.expectOne(SHARE).flush(null);
-    await fixture.whenStable();
-
-    expect(saved).toEqual([updated]);
-    expect(success).toHaveBeenCalledWith('Итоги отправлены');
-  });
-
-  it('sends a saved summary without writing it again', async () => {
-    await open(scheduledLesson({ summary: 'Готово' }));
-
-    await press('Отправить ученику');
-
-    backend.expectOne(SHARE).flush(null);
-    await fixture.whenStable();
-    backend.expectNone(SUMMARY);
-    expect(saved).toHaveLength(1);
-  });
-
-  it('does not send an empty summary and names the students of a group', async () => {
-    await open(groupLesson());
-
-    const send = buttonByText(document.body, 'Отправить ученикам');
-    expect(send.disabled).toBe(true);
-    send.click();
-    await fixture.whenStable();
-    backend.expectNone('/api/teacher/schedule/lessons/gl-1/summary');
+    expect(saved).toEqual([]);
   });
 
   it('tells a failed save and keeps the text', async () => {
     await open(scheduledLesson());
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     await type('#lesson-summary-text', 'Текст');
 
-    await press('Сохранить');
+    vi.advanceTimersByTime(1500);
     backend.expectOne(SUMMARY).flush({}, { status: 500, statusText: 'Server Error' });
     await fixture.whenStable();
 
@@ -172,37 +154,32 @@ describe('LessonSummarySection', () => {
   });
 
   describe('with a plan on the lesson', () => {
-    it('reads «Прошли по плану» without the field and sends it without a write', async () => {
+    it('starts at «По плану» without the field', async () => {
       await open(scheduledLesson({ topic: 'Past Simple', planId: 'p-1' }));
 
-      expect(bodyText()).toContain('Прошли по плану');
+      expect(pressedMode()).toBe('По плану');
       expect(document.body.querySelector('#lesson-summary-text')).toBeNull();
-      await press('Отправить ученику');
-      backend.expectNone(SUMMARY);
-      backend.expectOne(SHARE).flush(null);
-      await fixture.whenStable();
-      expect(success).toHaveBeenCalledWith('Итоги отправлены');
     });
 
     it('opens an empty field for the deviations at «Не всё по плану»', async () => {
       await open(scheduledLesson({ topic: 'Past Simple', planId: 'p-1' }));
 
-      await press('Не всё по плану');
+      await mode('Не всё по плану');
       expect(field('#lesson-summary-text').value).toBe('');
-      expect(bodyText()).toContain('Что прошло не по плану');
+      expect(bodyText()).toContain('Ученики увидят «Прошли по плану» и эти отличия');
       await type('#lesson-summary-text', 'Не успели упр. 5');
-      await press('Сохранить');
-      expect(backend.expectOne(SUMMARY).request.body).toEqual({
-        summary: 'Не успели упр. 5',
-        nextPlan: null,
-      });
+      fixture.destroy();
+      expect(backend.expectOne(SUMMARY).request.body).toEqual({ summary: 'Не успели упр. 5' });
     });
 
-    it('shows the saved deviations in the open field', async () => {
+    it('shows the saved deviations; «По плану» takes them off at once', async () => {
       await open(scheduledLesson({ planId: 'p-1', summary: 'Добавили диктант' }));
 
+      expect(pressedMode()).toBe('Не всё по плану');
       expect(field('#lesson-summary-text').value).toBe('Добавили диктант');
-      expect(bodyText()).not.toContain('Не всё по плану');
+      await mode('По плану');
+      expect(document.body.querySelector('#lesson-summary-text')).toBeNull();
+      expect(backend.expectOne(SUMMARY).request.body).toEqual({ summary: null });
     });
   });
 
@@ -228,7 +205,7 @@ describe('LessonSummarySection', () => {
         ai = true;
       });
 
-      it('drafts from the topic, the words and the linked assignments, in place of the topic', async () => {
+      it('drafts from the topic, the words and the linked assignments into the empty field', async () => {
         await open(scheduledLesson({ topic: 'Past Simple', assignmentIds: ['a-2', 'a-1', 'a-9'] }));
         await openDraft();
         await type('#lesson-summary-words', 'ошибки в глаголах');
@@ -293,11 +270,12 @@ describe('LessonSummarySection', () => {
         await fixture.whenStable();
 
         expect(bodyText()).toContain('Не удалось составить черновик');
-        expect(field('#lesson-summary-text').value).toBe('Тема');
+        expect(field('#lesson-summary-text').value).toBe('');
       });
 
       it('with a plan drafts the deviations from the words and the plan title', async () => {
         await open(scheduledLesson({ topic: 'Past Simple', planId: 'p-1' }));
+        await mode('Не всё по плану');
         await openDraft();
         expect(bodyText()).toContain('Напишите пару слов о том, что пошло не по плану');
         await type('#lesson-summary-words', 'не успели упр. 5');
@@ -318,8 +296,10 @@ describe('LessonSummarySection', () => {
         expect(field('#lesson-summary-text').value).toBe('Не успели упражнение 5.');
       });
 
-      it('with a plan an empty draft keeps «Прошли по плану», a failed plan read a stand-in title', async () => {
+      it('with a plan an empty draft finds no deviations, a failed plan read a stand-in title', async () => {
         await open(scheduledLesson({ planId: 'p-1' }));
+        expect(bodyText()).not.toContain('Черновик');
+        await mode('Не всё по плану');
         await openDraft();
         await type('#lesson-summary-words', 'всё успели');
 
@@ -332,7 +312,7 @@ describe('LessonSummarySection', () => {
         await fixture.whenStable();
 
         expect(bodyText()).toContain('По вашим словам всё прошло по плану');
-        expect(document.body.querySelector('#lesson-summary-text')).toBeNull();
+        expect(field('#lesson-summary-text').value).toBe('');
       });
 
       it('writes with the model picked beside «Составить», and with the default one once it is gone', async () => {

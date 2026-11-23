@@ -275,7 +275,7 @@ test('a held lesson with a plan reads «Прошли по плану» to the st
       await json<unknown>(
         await request.put(`/api/teacher/schedule/lessons/${held.id}/summary`, {
           headers: teacher,
-          data: { summary, nextPlan: '' },
+          data: { summary },
         }),
       );
     }

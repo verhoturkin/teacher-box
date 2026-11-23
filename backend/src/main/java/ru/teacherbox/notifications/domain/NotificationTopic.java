@@ -10,7 +10,6 @@ public enum NotificationTopic {
     REMINDERS,
     BILLING,
     ACCOUNT,
-    LESSON_SUMMARY,
     MESSAGES;
 
     public static NotificationTopic of(NotificationKind kind) {
@@ -21,7 +20,6 @@ public enum NotificationTopic {
             case SCHEDULE_LESSON_PLANNED, SCHEDULE_LESSON_MOVED, SCHEDULE_LESSON_CANCELLED, SCHEDULE_REQUEST,
                     SCHEDULE_REQUEST_ANSWERED, MEETING_LINK -> SCHEDULE;
             case STUDENT_ACTIVATED, SCHEDULE_CALENDAR, BACKUP_FAILED, BACKUP_UPLOAD_FAILED -> ACCOUNT;
-            case LESSON_SUMMARY -> NotificationTopic.LESSON_SUMMARY;
             case MESSAGE -> MESSAGES;
         };
     }

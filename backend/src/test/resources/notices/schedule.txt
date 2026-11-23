@@ -446,23 +446,6 @@ link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c5
 room: https://telemost.yandex.ru/j/5
 --
 
-## summary [RU]
-to: Анна Иванова
-kind: LESSON_SUMMARY
-title: Итоги урока 01.10
-body: Учитель написал, что вы прошли на уроке.
-link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
---
-to: Vera Smith
-kind: LESSON_SUMMARY
-title: Итоги урока 01.10
-body: Учитель написал, что вы прошли на уроке.
-link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
---
-
-## summary: nobody [RU]
-(nothing)
-
 ## calendar lost [RU]
 to: teacher
 kind: SCHEDULE_CALENDAR
@@ -918,23 +901,6 @@ body: In 1 minute.
 link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c5
 room: https://telemost.yandex.ru/j/5
 --
-
-## summary [EN]
-to: Анна Иванова
-kind: LESSON_SUMMARY
-title: Lesson summary: 01.10
-body: Your teacher has shared a summary of what you covered.
-link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
---
-to: Vera Smith
-kind: LESSON_SUMMARY
-title: Lesson summary: 01.10
-body: Your teacher has shared a summary of what you covered.
-link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
---
-
-## summary: nobody [EN]
-(nothing)
 
 ## calendar lost [EN]
 to: teacher

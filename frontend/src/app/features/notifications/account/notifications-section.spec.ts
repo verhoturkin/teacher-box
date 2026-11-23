@@ -327,7 +327,7 @@ describe('NotificationsSection', () => {
   describe('what to send', () => {
     it('gives a student the student topics and the teacher the teacher ones', async () => {
       await render();
-      expect(text()).toContain('Итоги урока');
+      expect(text()).toContain('Домашние задания');
       expect(text()).not.toContain('Ученики, календарь и копии');
       expect(text()).toContain('Сообщения учителя Приходят всегда');
       expect(text()).toContain('Тихие часы Не присылать ночью');
@@ -340,7 +340,7 @@ describe('NotificationsSection', () => {
       expect(text()).toContain('Занятия');
       expect(text()).toContain('Сроки заданий');
       expect(text()).toContain('Проверенные работы');
-      expect(text()).not.toContain('Итоги урока');
+      expect(text()).not.toContain('Домашние задания');
       expect(text()).not.toContain('Сообщения учителя');
       expect(text()).toContain('Тихие часы');
       expect(text()).toContain('оплате и проверенной работе ребёнка');
@@ -405,7 +405,7 @@ describe('NotificationsSection', () => {
 
     it('mutes a topic at once', async () => {
       await render({ teacher: true });
-      expect(text()).not.toContain('Итоги урока');
+      expect(text()).toContain('Ученики, календарь и копии');
       const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
 
       await click('notify-topic-BILLING');

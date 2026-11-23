@@ -622,9 +622,7 @@ export class NotificationsSection implements OnInit {
           }));
     }
     const muted = this.preferences()?.mutedTopics ?? [];
-    return MUTABLE_TOPICS.filter((topic) =>
-      this.teacher() ? !topic.studentOnly : !topic.teacherOnly,
-    ).map((topic) => ({
+    return MUTABLE_TOPICS.filter((topic) => this.teacher() || !topic.teacherOnly).map((topic) => ({
       key: topic.topic,
       label: topic.label,
       hint: topic.hint,

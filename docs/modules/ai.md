@@ -145,7 +145,7 @@ code.**
   prompt: only what went differently from the plan, and an empty `summary` is an answer — all by
   the plan (no 422); the frontend then keeps «Прошли по плану» and needs the teacher's words.
 - Lesson plan draft (464.1; `POST lesson-plan` `{prompt ≤ 4000, courseName ≤ 100?,
-  lesson? {topic ≤ 500?, previousSummary ≤ 4000?, previousNextPlan ≤ 1000?}, sources?, context?,
+  lesson? {topic ≤ 500?, previousSummary ≤ 4000?}, sources?, context?,
   modelId?}`, JSON or `multipart/form-data` as the homework draft — the same `sources`, uploads
   after them; prompts `lesson-plan.system.v1`, `lesson-plan.user.v1`, the lesson through
   `lesson-context.v1` between `<lesson>` tags as data, no lesson — no block) → `{title ≤ 200, body ≤
@@ -166,9 +166,9 @@ code.**
   `LessonPlans.find(planIds)` (the plan's title, textbook pages, video titles — no body, no
   transcript) → `HomeworkJournal.ofStudent` and writes one line per lesson (date and time in the
   teacher's zone, minutes, group, title, topic, the student's outcome, the plan, «Что прошли» ≤
-  1000 — with a plan «Не по плану: …» or, attended and nothing written, «Прошли по плану» (466.3)
-  — the next plan) and per task (given, due, handed in on time or late, status, grade, the
-  review comment ≤ 500); at most 60 lessons and 60 tasks, the newest kept. Nothing in the period —
+  1000 — with a plan «Не по плану: …» or, attended and nothing written, «Прошли по плану»
+  (466.3)) and per task (given, due, handed in on time or late, status, grade, the review comment
+  ≤ 500); at most 60 lessons and 60 tasks, the newest kept. Nothing in the period —
   422 `ai.period-empty`, no call. Prompts `period-summary.system.v1` (sections «Что прошли»,
   «Задания», «Получается», «Трудности», «Что дальше») and `period-summary.user.v1` (`<lessons>`,
   `<homework>`, `<request>` as data; no wishes — `—`). The draft is neither saved nor sent;
@@ -195,8 +195,8 @@ proxies).
 
 ## Frontend
 
-`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты»
-menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промпты»
+menu — search, «Сохранить запрос как промпт», link to the library; «Опереться на» popover; draft with
 «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), `ai-settings-panel.ts` = the settings
 category «ИИ-помощник» (`/teacher/settings/ai`, `/teacher/ai` redirects; usage split by model with
 the monthly limit, the request log with «Показать ещё»; `ai-setup.ts` holds the connections and

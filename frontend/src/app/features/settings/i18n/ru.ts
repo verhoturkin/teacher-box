@@ -74,7 +74,7 @@ export const ru = {
     botBlocked: 'бот заблокирован',
     you: 'Вы',
     ai: 'ИИ-помощник',
-    aiSummary: 'Модель, расход, промты',
+    aiSummary: 'Модель, расход, промпты',
     aiOff: 'Не подключён',
     aiOn: 'Подключён',
     aiUsed: (percent: number) => `Подключён · ${String(percent)} % лимита`,

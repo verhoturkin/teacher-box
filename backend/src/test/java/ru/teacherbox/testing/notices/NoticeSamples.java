@@ -43,7 +43,6 @@ import ru.teacherbox.schedule.api.LessonRescheduled;
 import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
-import ru.teacherbox.schedule.api.LessonSummaryShared;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.shared.money.Money;
 import ru.teacherbox.testing.notices.NoticeGolden.Sample;
@@ -187,8 +186,6 @@ public final class NoticeSamples {
                 new Sample("soon: room only", new LessonStartingSoon(id(197), null, List.of(ANNA), START, 60, null,
                         null, ROOM, Duration.ofMinutes(1), false, EARLIER)),
 
-                new Sample("summary", new LessonSummaryShared(id(201), List.of(ANNA, VERA), TEACHER, START, LATER)),
-                new Sample("summary: nobody", new LessonSummaryShared(id(202), List.of(), TEACHER, START, LATER)),
                 new Sample("calendar lost", new GoogleCalendarDisconnected("invalid_grant", EARLIER)));
     }
 
