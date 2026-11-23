@@ -35,9 +35,11 @@ cards laid out in two columns on wide screens, like Settings. No new ADRs.
   `textbooks/teacher/lesson-plan-editor-page.ts` moves from `tb-page-header` + form to `tb-panes`
   / `tb-pane` with `tb-editor-header` and the AI panel as a fixed resizable side pane, like
   `homework/teacher/assignment-editor-page.ts` (`@shared/ui/panes`); spec, `docs/screens.md`.
-- [ ] 467.2 *simple* — the phone icon: `public/apple-touch-icon.png` and `public/icons/*.png`
-  (manifest icons) are re-rendered from `public/favicon.svg`, the icon of the web client; check the
-  manifest and `index.html` point at them.
+- [x] 467.2 *simple* — the phone icon: `public/apple-touch-icon.png` and `public/icons/*.png`
+  (manifest icons) are re-rendered as the web client's default logo (`tb-i-school`, the Material
+  Symbols outlined cap, primary `#4648d4` on the tonal `#bdbefe` rounded square; maskable — full
+  bleed, glyph inside the safe zone), not the filled cap of `favicon.svg`; the manifest and
+  `index.html` already point at them.
 - [ ] 467.3 *simple* — student card header: the «Итоги» button
   (`students/student-card.ts`, `.tb-student-card__summary`) gets a visible label like «Написать»,
   «Оплата», «Занятие» (icon-only stays only where the others collapse too); the course chip icon
