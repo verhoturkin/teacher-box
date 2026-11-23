@@ -26,7 +26,8 @@ test('the colour of a student highlights their avatar while the row stays neutra
   await invite.getByRole('button', { name: 'Закрыть', exact: true }).last().click();
   await expect(invite).toBeHidden();
   // 0.23.0: the colour is chosen on the Профиль tab of the card, which opens after creating
-  const details = page.locator('p-card', { hasText: 'Данные ученика' });
+  // 0.62.0: the colour is in the «Занятия» card of Профиль
+  const details = page.locator('p-card').filter({ has: page.locator('tb-label-color-field') });
   await details.locator('tb-label-color-field .p-select').click();
   await page.getByRole('option', { name: 'Красный' }).click();
   await details.getByRole('button', { name: 'Сохранить' }).click();

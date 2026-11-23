@@ -38,7 +38,8 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await invite.getByRole('button', { name: 'Закрыть', exact: true }).last().click();
   await expect(invite).toBeHidden();
   // 0.23.0: the colour is on the Профиль tab of the card, which opens after creating
-  const details = page.locator('p-card', { hasText: 'Данные ученика' });
+  // 0.62.0: the colour is in the «Занятия» card of Профиль
+  const details = page.locator('p-card').filter({ has: page.locator('tb-label-color-field') });
   await pickColor(page, 'Фиолетовый', details);
   await details.getByRole('button', { name: 'Сохранить' }).click();
 
