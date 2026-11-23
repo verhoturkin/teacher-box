@@ -499,9 +499,14 @@ export class MaterialsPage implements OnInit {
     openOnCreate('textbook', () => {
       this.textbooks()?.openCreate(this.currentCourse());
     });
-    openOnCreate('plan', () => {
-      this.plans()?.openCreate(this.currentCourse());
-    });
+    // the plan editor is a route: it takes the place of `?create=` in the history (no drop, or the drop cancels it)
+    openOnCreate(
+      'plan',
+      () => {
+        this.plans()?.openCreate(this.currentCourse(), true);
+      },
+      false,
+    );
   }
 
   ngOnInit(): void {

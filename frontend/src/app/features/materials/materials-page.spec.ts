@@ -244,7 +244,10 @@ describe('MaterialsPage', () => {
       await fixture.whenStable();
       expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans/new'], {
         queryParams: { course: 'c-1' },
+        replaceUrl: true,
       });
+      // the editor's route replaces `?create=`: dropping it too would cancel the navigation (467.6)
+      expect(navigate).toHaveBeenCalledTimes(1);
     });
 
     it('opens the form of a new textbook from the rail with the chosen course', async () => {

@@ -111,8 +111,8 @@ export interface HeaderTag {
       .tb-card-head__actions {
         display: grid;
         flex-basis: 100%;
-        grid-auto-columns: 1fr;
-        grid-auto-flow: column;
+        /* equal columns that wrap: four labelled actions do not fit one row at 375 px (467.6) */
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
 
         ::ng-deep .p-button {
           width: 100%;

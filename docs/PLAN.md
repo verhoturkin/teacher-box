@@ -54,8 +54,11 @@ cards laid out in two columns on wide screens, like Settings. No new ADRs.
   menu. The rail menu gets «План урока» (`kind: 'plan'`, section `/teacher/materials`, `tab:
   plans`), and the page opens it with `openOnCreate('plan', …)` like board and textbook; specs,
   `docs/screens`, help articles and wiki.
-- [ ] 467.6 *simple* — browser check of 467.1–467.5 in the built-in browser (wide and 375 px):
-  fix small defects, list the rest.
+- [x] 467.6 *simple* — browser check of 467.1–467.5 in the built-in browser (wide and 375 px):
+  fix small defects, list the rest. Fixed: the rail «Создать» → «План урока» did not open the
+  editor (the dropped `?create=` cancelled the navigation); the student card's four actions
+  overflowed at 375 px (now a 2×2 grid). *Not checked: the AI side pane of the plan editor (needs an
+  AI-enabled backend), the course saved from Профиль surviving a reload.*
 - [ ] 467.7 *simple* — release 0.62.0 (skill `release`).
 
 ## Backlog
