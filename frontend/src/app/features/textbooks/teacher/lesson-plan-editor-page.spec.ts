@@ -359,7 +359,7 @@ describe('LessonPlanEditorPage', () => {
     const lessonOf = vi.fn(() =>
       of({
         studentIds: ['s-1'],
-        facts: { topic: 'Past Simple', previousSummary: null, previousNextPlan: null },
+        facts: { topic: 'Past Simple', previousSummary: null },
       }),
     );
     fixture = TestBed.createComponent(LessonPlanEditorPage);

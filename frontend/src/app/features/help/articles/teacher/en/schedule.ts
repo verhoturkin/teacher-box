@@ -78,16 +78,16 @@ itself stays. A cancelled lesson cannot take new homework.
 
 Once a lesson has started, add a summary in its details. Summaries are unavailable for cancelled lessons and individual lessons marked Missed.
 
-“What we covered” is visible to the lesson’s students and initially shows the lesson topic. “Next lesson topic” fills the next lesson’s topic if that \
-field is empty. “Save” keeps your changes; “Send to student” or “Send to students” also sends a Lesson summary notification.
+“What we covered” is visible to the lesson’s students in their lesson history. It saves automatically a couple of seconds after you stop typing and \
+when you close the details; there is no Save button and no notification.
 
-If AI is enabled, “Generate draft” uses the lesson topic, the assignments linked to the lesson and your notes to suggest a summary. Review it before sending. Completed \
+If AI is enabled, “Generate draft” uses the lesson topic, the assignments linked to the lesson and your notes to suggest a summary. Review it before you \
+leave it. Completed \
 lessons with summaries appear in the student or group’s lesson history. In the bot, choose “Add summary” after recording a completed lesson.
 
-If the lesson has a plan, the summary shows **“Covered as planned”** instead of the “What we covered” field, and that is what students see. If \
-something was different, choose **“Not everything went to plan”** and note only the changes: students see “Covered as planned” followed by them. \
-For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan. You can send the summary \
-without any changes.
+If the lesson has a plan, “What we covered” has a toggle, **“As planned | With changes”**. With “As planned” there is no field, and students see \
+“Covered as planned”. If something was different, choose **“With changes”** and note only the changes: students see “Covered as planned” followed by them. \
+For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan.
 
 ## Cancel, restore or delete
 

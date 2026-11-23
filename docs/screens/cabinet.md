@@ -18,8 +18,8 @@ compact starts with the day agenda, and there the sections have no tonal block o
 and list items stand on the page — the items are tonal (`surface-container`, not the white
 lowest container; the lowest one only on the wide tonal pane), the subscription is the plain
 outlined card. The history shows
-only the shared summary (no plan, no private note). The «lesson summary»
-notification opens `/cabinet/schedule?lesson=<id>`, the lesson's card. A prepared lesson has the
+only the summary (no plan, no private note); `/cabinet/schedule?lesson=<id>` opens the lesson's
+card. A prepared lesson has the
 read-only row «План: <title>» ([schedule](schedule.md#lesson-plan)) that opens in place: text,
 textbook pages to open or download, videos with the player.
 

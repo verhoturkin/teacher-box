@@ -144,7 +144,7 @@ public class ScheduleQueries implements LessonJournal {
                 lesson.topic(), lesson.groupId(), outcome,
                 outcome == LessonOutcome.CANCELLED || outcome == LessonOutcome.LATE_CANCELLED ? lesson.cancelledBy()
                         : null,
-                lesson.summary(), lesson.nextPlan(), lesson.planId(), lesson.assignmentIds());
+                lesson.summary(), lesson.planId(), lesson.assignmentIds());
     }
 
     private static LessonOutcome outcome(Lesson lesson, Attendance attendance) {
@@ -160,28 +160,28 @@ public class ScheduleQueries implements LessonJournal {
         };
     }
 
-    /** Held lessons of a student for the teacher: with the summary, the plan and the own private note. */
+    /** Held lessons of a student for the teacher: with the summary and the own private note. */
     public List<HistoryEntry> studentHistory(UUID studentId, @Nullable Instant before, int limit) {
         List<Lesson> found = lessons.findHeldOfStudent(studentId, before(before), limit);
         Map<UUID, LessonNote> notes = lessons.findNotes(studentId, found.stream().map(Lesson::id).toList());
-        return history(found, studentId, true, notes);
+        return history(found, studentId, notes);
     }
 
     /** Held lessons of a group for the teacher: the shared summary, no private notes. */
     public List<HistoryEntry> groupHistory(UUID groupId, @Nullable Instant before, int limit) {
-        return history(lessons.findHeldOfGroup(groupId, before(before), limit), null, true, Map.of());
+        return history(lessons.findHeldOfGroup(groupId, before(before), limit), null, Map.of());
     }
 
     /** Held lessons of the student for the student: the shared summary only. */
     public List<HistoryEntry> myHistory(UUID studentId, @Nullable Instant before, int limit) {
-        return history(lessons.findHeldOfStudent(studentId, before(before), limit), studentId, false, Map.of());
+        return history(lessons.findHeldOfStudent(studentId, before(before), limit), studentId, Map.of());
     }
 
     private Instant before(@Nullable Instant before) {
         return before == null ? clock.instant().plus(Duration.ofDays(3650)) : before;
     }
 
-    private List<HistoryEntry> history(List<Lesson> found, @Nullable UUID studentId, boolean withPlan,
+    private List<HistoryEntry> history(List<Lesson> found, @Nullable UUID studentId,
             Map<UUID, LessonNote> notes) {
         ScheduleNames names = directory.namesOf(found);
         return found.stream().map(lesson -> new HistoryEntry(lesson.id(), lesson.startsAt(), lesson.title(),
@@ -189,7 +189,7 @@ public class ScheduleQueries implements LessonJournal {
                 studentId == null ? null : lesson.participants().stream()
                         .filter(participant -> participant.studentId().equals(studentId))
                         .map(participant -> participant.attendance()).findFirst().orElse(null),
-                lesson.summary(), withPlan ? lesson.nextPlan() : null, lesson.summaryUpdatedAt(),
+                lesson.summary(), lesson.summaryUpdatedAt(),
                 notes.containsKey(lesson.id()) ? notes.get(lesson.id()).note() : null, lesson.planId())).toList();
     }
 

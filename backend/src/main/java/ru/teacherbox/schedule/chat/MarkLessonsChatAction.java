@@ -32,7 +32,7 @@ import ru.teacherbox.shared.i18n.Language;
 
 /**
  * The teacher marks lessons: a lesson → «Проведено» or «Пропуск» (for a group — who came) →
- * confirmation; after «Проведено» the summary of the lesson may be written and sent.
+ * confirmation; after «Проведено» the summary of the lesson may be written.
  */
 abstract class MarkLessonsChatAction implements ChatAction {
 
@@ -41,7 +41,6 @@ abstract class MarkLessonsChatAction implements ChatAction {
     static final String READY = "ready";
     static final String WRITE = "write";
     static final String SKIP = "skip";
-    static final String SEND = "send";
     /** Participants that fit on the buttons together with «Готово» and «Отмена». */
     static final int MAX_PARTICIPANTS = ChatKit.MAX_BUTTONS - 2;
 
@@ -90,7 +89,6 @@ abstract class MarkLessonsChatAction implements ChatAction {
             case "confirm" -> confirm(user, state, input);
             case "offer" -> offer(language, state, input);
             case "summary" -> summary(language, state, input);
-            case "share" -> share(language, state, input);
             default -> start(user);
         };
     }
@@ -272,11 +270,8 @@ abstract class MarkLessonsChatAction implements ChatAction {
         }
         try {
             UUID lessonId = state.id("lesson").orElseThrow();
-            // the plan «what next» is written on the portal: keep what is there
-            String nextPlan = lessons.lesson(lessonId).map(LessonView::nextPlan).orElse(null);
-            boolean group = schedule.updateSummary(lessonId, text.get(), nextPlan).groupId() != null;
-            return ChatStep.ask(ChatReply.of(t.summarySaved(group)).row(shareButtons(t, group)),
-                    state.with("group", Boolean.toString(group)).withStep("share"));
+            boolean group = schedule.updateSummary(lessonId, text.get()).groupId() != null;
+            return ChatStep.changed(ChatReply.of(t.summarySaved(group)), "lesson-summary-written " + lessonId);
         } catch (RuntimeException e) {
             return ChatStep.done(t.summaryFailed());
         }
@@ -287,32 +282,9 @@ abstract class MarkLessonsChatAction implements ChatAction {
         return state.id("lesson").flatMap(lessons::lesson).map(lesson -> lesson.planId() != null).orElse(false);
     }
 
-    private ChatStep share(Language language, ChatState state, ChatInput input) {
-        ScheduleChatTexts t = ScheduleChatTexts.of(language);
-        boolean group = state.get("group").map(Boolean::parseBoolean).orElse(false);
-        String lesson = state.get("lesson").orElse("");
-        if (input instanceof ChatInput.Choice(String value) && value.equals(READY)) {
-            return ChatStep.changed(ChatReply.of(t.summaryKept()), "lesson-summary-written " + lesson);
-        }
-        if (!(input instanceof ChatInput.Choice(String value) && value.equals(SEND))) {
-            return ChatStep.ask(ChatReply.of(t.summarySaved(group)).row(shareButtons(t, group)), state);
-        }
-        try {
-            schedule.shareSummary(UUID.fromString(lesson));
-            return ChatStep.changed(ChatReply.of(t.summarySent()), "lesson-summary-shared " + lesson);
-        } catch (RuntimeException e) {
-            return ChatStep.done(t.summaryFailed());
-        }
-    }
-
     private static ChatButton[] summaryButtons(ScheduleChatTexts t) {
         return new ChatButton[] {ChatButton.choice(ChatIcons.with(ChatIcons.UNMARKED, t.writeSummary()), WRITE),
                 ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, t.skipSummary()), SKIP)};
-    }
-
-    private static ChatButton[] shareButtons(ScheduleChatTexts t, boolean group) {
-        return new ChatButton[] {ChatButton.choice(ChatIcons.with(ChatIcons.YES, t.sendSummary(group)), SEND),
-                ChatButton.choice(ChatIcons.with(ChatIcons.DONE, t.done()), READY)};
     }
 
     private static ChatButton[] outcomeButtons(ScheduleChatTexts t) {

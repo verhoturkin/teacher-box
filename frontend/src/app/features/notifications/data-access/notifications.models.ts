@@ -20,14 +20,13 @@ export type NotificationKind =
   | 'STUDENT_ACTIVATED'
   | 'BACKUP_FAILED'
   | 'BACKUP_UPLOAD_FAILED'
-  | 'LESSON_SUMMARY'
   | 'MESSAGE';
 
 export type ChannelType = 'TELEGRAM' | 'VK' | 'MAX';
 
 /** Groups of notifications a user can stop receiving in messengers (`MESSAGES` is always sent). */
 export type NotificationTopic =
-  'HOMEWORK' | 'SCHEDULE' | 'REMINDERS' | 'BILLING' | 'ACCOUNT' | 'LESSON_SUMMARY' | 'MESSAGES';
+  'HOMEWORK' | 'SCHEDULE' | 'REMINDERS' | 'BILLING' | 'ACCOUNT' | 'MESSAGES';
 
 /** Mirrors `NotificationView` of the backend. */
 export interface NotificationItem {

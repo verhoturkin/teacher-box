@@ -148,14 +148,11 @@ const lessonOfPlan = () => {
                   ? []
                   : [lesson.studentId]
                 : lesson.participants.map((participant) => participant.studentId);
-            const facts = (
-              previous: { summary: string | null; nextPlan: string | null } | null,
-            ) => ({
+            const facts = (previous: { summary: string | null } | null) => ({
               studentIds,
               facts: {
                 topic: lesson.topic,
                 previousSummary: previous?.summary ?? null,
-                previousNextPlan: previous?.nextPlan ?? null,
               },
             });
             return of === null

@@ -165,12 +165,6 @@ function daysFrom(date: Date, days: number): Date {
                     <span class="tb-list__title">{{ start(entry) }}</span>
                     <span class="tb-list__supporting">{{ entryDetails(entry) }}</span>
                     <tb-lesson-covered [summary]="entry.summary" [byPlan]="byPlan(entry)" />
-                    @if (entry.nextPlan) {
-                      <p class="tb-history__part">
-                        <span class="tb-history__label">{{ t.next }}</span>
-                        {{ entry.nextPlan }}
-                      </p>
-                    }
                     @if (entry.note) {
                       <p class="tb-history__part">
                         <span class="tb-history__label">{{ t.note }}</span>

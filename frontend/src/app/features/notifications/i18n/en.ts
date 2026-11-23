@@ -12,8 +12,6 @@ export const en: Translation<typeof ru> = {
     HOMEWORK_HINT: 'New assignments, submissions and feedback',
     BILLING: 'Payments',
     BILLING_HINT: 'Completed lessons and recorded payments',
-    LESSON_SUMMARY: 'Lesson summary',
-    LESSON_SUMMARY_HINT: 'What you covered and what comes next',
     ACCOUNT: 'Students, calendar and backups',
     ACCOUNT_HINT: 'Accepted invitations, Google Calendar connection issues and failed backups',
   },

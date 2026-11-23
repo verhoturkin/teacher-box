@@ -350,8 +350,7 @@ class AssistantIntegrationTests {
 
         assertThat(post("/api/teacher/ai/lesson-plan", """
                 {"prompt": "Урок по Present Simple, 45 минут", "courseName": "A2",
-                 "lesson": {"topic": "Present Simple", "previousSummary": "Повторили to be",
-                            "previousNextPlan": "Начать Present Simple"},
+                 "lesson": {"topic": "Present Simple", "previousSummary": "Повторили to be"},
                  "sources": [{"type": "TEXTBOOK", "id": "%s", "pages": "10-12"},
                              {"type": "VIDEO", "title": "Routines", "url": "https://youtu.be/aaaaaaaaaaa",
                               "transcript": "[0:05] I get up at seven"}],
@@ -372,8 +371,7 @@ class AssistantIntegrationTests {
         assertThat(request.prompt())
                 .startsWith("Об учениках")
                 .contains("<students>\nУровень английского: A2\n</students>",
-                        "<lesson>\nТема урока: Present Simple\nИтоги прошлого урока: Повторили to be\n"
-                                + "Что наметили на этот урок: Начать Present Simple\n</lesson>",
+                        "<lesson>\nТема урока: Present Simple\nИтоги прошлого урока: Повторили to be\n</lesson>",
                         "Курс: A2", "0 — «Spotlight 5», с. 10-12",
                         "<request>\nУрок по Present Simple, 45 минут\n</request>")
                 .doesNotContain("{{");

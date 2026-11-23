@@ -56,7 +56,7 @@ describe('SystemPromptsCard', () => {
   it('saves the rewritten standard prompt', async () => {
     const { card, host } = await render();
 
-    button(host, 'Изменить системный промт «Черновик задания»').click();
+    button(host, 'Изменить системный промпт «Черновик задания»').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Формат ответа портал задаёт сам');
     expect(() => buttonByText(document.body, 'Другие действия')).toThrow();
@@ -110,7 +110,7 @@ describe('SystemPromptsCard', () => {
       return confirmation;
     });
 
-    button(host, 'Изменить системный промт «Черновик проверки»').click();
+    button(host, 'Изменить системный промпт «Черновик проверки»').click();
     await fixture.whenStable();
     buttonByText(document.body, 'Другие действия').click();
     await fixture.whenStable();

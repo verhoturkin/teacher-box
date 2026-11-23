@@ -111,7 +111,7 @@ ADRs: [0008](../adr/0008-schedule.md),
 
 Events: `LessonScheduled`, `LessonRepeatScheduled`, `LessonRepeatStopped`, `LessonRescheduled`, `ScheduledLessonCancelled`,
 `LessonRestored`, `LessonDeleted`, `LessonStartingSoon`, `LessonChangeRequested`, `LessonChangeResolved`,
-`LessonCompleted`, `LessonCompletionRevoked`, `LessonSummaryShared`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
+`LessonCompleted`, `LessonCompletionRevoked`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
 Lesson events carry `groupId` and participants; `LessonScheduled`, `LessonStartingSoon` and
 `LessonCompleted` carry `title` (`null` = default), the first two also `topic`.
 Consumers: `billing` (completion); the schedule itself (`notices/`, below).
@@ -121,7 +121,7 @@ Consumers: `billing` (completion); the schedule itself (`notices/`, below).
 lessons, alone or in a group and whatever the outcome, starting on the days `[from, to]` of the
 instance time zone, oldest first, as `JournalLesson` (start, minutes, title, topic, `groupId`,
 `LessonOutcome` for this student, `cancelledBy` of a cancelled or late-cancelled one, summary —
-with `planId` only the deviations from the plan, 466.3 — next plan, `planId`, `assignmentIds`;
+with `planId` only the deviations from the plan, 466.3 — `planId`, `assignmentIds`;
 no private notes). The outcome: a cancelled lesson —
 `CANCELLED`; else by the attendance — `EXPECTED` → `PLANNED`, `ATTENDED`, `EXCUSED`, `MISSED` →
 `LATE_CANCELLED` for a lesson with one student cancelled late and charged (`cancelledBy` set),
@@ -151,16 +151,16 @@ button in messengers; the text has no address — 429.1).
 ADR-0056: default duration in minutes, late cancellation, reminders, horizon — ISO-8601, empty =
 default; filled once from `.env` by `ScheduleSettingsImport`, read by `LessonRulesService`).
 
-Lesson summary (0.37.0): `lessons.summary` (4000, Markdown, shown to the participants), `next_plan` (1000) and
+Lesson summary (0.37.0): `lessons.summary` (4000, Markdown, shown to the participants), and
 `summary_updated_at`; `lesson_notes (lesson_id, student_id, note, updated_at)` — the teacher's private note per
 student, never shown to students. Since 0.41.0 nothing writes notes (the endpoint is gone): the old ones are
 only read — in the lesson details and the student's history feed, teacher only. The summary is saved by its own
 `UPDATE` without the lesson `version`, so it never conflicts with time edits; last write wins. Allowed only for
-a lesson that has started and is not `CANCELLED`, and not for an individual `MISSED` one — the same for the
-share action (errors `schedule.lesson-cancelled`, `schedule.lesson-not-started`, `schedule.lesson-missed`,
-`schedule.summary-too-long`). Series edits do not touch them; deleting a lesson deletes its notes. Saving a non-empty `next_plan` copies it (cut to 500 characters, our
-decision) into the topic of the next planned lesson of the same student (or the same group) if that topic is empty;
-a filled topic is never overwritten, the title is never touched.
+a lesson that has started and is not `CANCELLED`, and not for an individual `MISSED` one (errors
+`schedule.lesson-cancelled`, `schedule.lesson-not-started`, `schedule.lesson-missed`,
+`schedule.summary-too-long`). Series edits do not touch them; deleting a lesson deletes its notes.
+Nothing is sent to the students: they read the summary in their lesson history (ADR-0073). The old `next_plan` column is dropped (`V11__drop_next_plan.sql`), the next
+lesson's topic is never filled from a plan.
 Calendar lists, ICS and Google carry none of these fields.
 
 Lesson plan (461.2, [ADR-0071](../adr/0071-courses-lesson-plans-and-bank.md)): `lessons.plan_id`
@@ -173,8 +173,7 @@ link; deleting the lesson drops it and leaves the plan in `textbooks` (it cannot
 
 «Прошли по плану» (466.3, ADR-0071 decision 14): with `plan_id` set, `lessons.summary` holds
 only the deviations from the plan, `null` — all by the plan. No flag and no migration: the
-plan's presence decides the meaning. `shareSummary` sends an empty summary of a lesson with a
-plan (`schedule.summary-empty` only without one). Text saved before 0.61.0 on a lesson with a
+plan's presence decides the meaning. Text saved before 0.61.0 on a lesson with a
 plan reads as the deviations: it is kept and shown (the field opens with it), nothing is lost,
 and plans came out in 0.60.0, so such lessons are few. The history feeds carry `planId`; the
 bot asks «что прошло не по плану» for a lesson with a plan.
@@ -209,11 +208,12 @@ Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher)
 no join button) and the same lesson change (`schedule.move`, `schedule.cancel`) for a guardian —
 with several children the dialog first asks «Для кого?», each step checks the child is still theirs.
 After «Проведено» (or an attendance mark that leaves the lesson conducted) the mark-lessons dialog offers
-«Записать итоги» / «Пропустить»: the next text message (≤ 4000 characters) is saved with `updateSummary` (the
-portal's «Что дальше» is kept), then «Отправить ученику(ам)» (`shareSummary`) / «Готово». The marking is
-audited at once through `AuditLog.bot`, the final step by the dialog (`lesson-summary-shared` /
-`lesson-summary-written`); a changed or refused lesson ends with a short «не получилось» answer.
-`PUT lessons/{id}/summary` (`summary`, `nextPlan`; blank clears) returns the lesson details: `GET lessons/{id}` of the teacher has `summary`, `nextPlan`, `summaryUpdatedAt`, `notes[]`;
+«Записать итоги» / «Пропустить»: the next text message (≤ 4000 characters) is saved with `updateSummary`.
+The bot answers «Итоги сохранены: ученик(и) увидит(ят) их в истории занятий.» and the dialog ends
+(no share step). The marking is audited at once through `AuditLog.bot`, the summary by the dialog
+(`lesson-summary-written`); a changed or refused lesson ends with a short «не получилось» answer.
+`PUT lessons/{id}/summary` (`summary`; blank clears) returns the lesson details: `GET lessons/{id}`
+of the teacher has `summary`, `summaryUpdatedAt`, `notes[]`;
 `GET /api/me/schedule/lessons/{id}` has `summary` only (a lesson the student is not in is 404); lists have none.
 Lesson plan (461.2, `LessonPlanLinks`):
 `PUT /api/teacher/schedule/lessons/{id}/plan {planId | null}` returns the details; no `version`;
@@ -242,7 +242,7 @@ guardian's have an empty list.
 History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, newest first, paged by the
 `before` instant = start of the last item, `limit` 1–100, default 20):
 `GET /api/teacher/schedule/students/{id}/history`
-(date, title, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
+(date, title, topic, status, attendance, `summary`, the student's own private `note`),
 `GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
 `GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note); every
 entry has `planId` (466.3: with it `summary` is the deviations).
@@ -260,8 +260,6 @@ interval, title, end) merged into one item: `weekdays`, `startTime`, `durationMi
 ungenerated dates up to the end included; `null` without an end), `title`, group, `nextStartsAt`.
 `lessons[]` — the rest with `kind`: `ONE_OFF` (no rule), `CANCELLED`, `MOVED`
 (`originalStartsAt` set) or `CHANGED` (an individually edited occurrence).
-`POST lessons/{id}/summary/share` (204) publishes `LessonSummaryShared(lessonId, studentIds, teacherId, startsAt,
-occurredAt)` — only this explicit action, never a plain save; an empty summary is `schedule.summary-empty` (422).
 Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)
 and optional optimistic `version`/`repeatVersion`. The UI supplies versions. `GET lessons/{id}/following`
 discloses affected/protected existing lesson IDs and the rule version before a bulk action. Standalone

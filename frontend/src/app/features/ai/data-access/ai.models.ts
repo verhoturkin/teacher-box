@@ -298,7 +298,6 @@ export interface AiSettings {
 export interface LessonFacts {
   readonly topic: string | null;
   readonly previousSummary: string | null;
-  readonly previousNextPlan: string | null;
 }
 
 export interface LessonPlanBrief {

@@ -30,7 +30,7 @@ public class LessonRepository {
     private static final String SELECT = """
             select id, group_id, series_id, series_date, starts_at, duration_minutes, title, topic, meeting_url, status,
                    cancelled_by, cancel_reason, original_starts_at, created_at, updated_at, version, individually_changed,
-                   summary, next_plan, summary_updated_at, plan_id
+                   summary, summary_updated_at, plan_id
             from schedule.lessons
             """;
     private static final String ORDER = " order by starts_at, id";
@@ -44,7 +44,7 @@ public class LessonRepository {
             Instant startsAt, int durationMinutes, @Nullable String title, @Nullable String meetingUrl,
             LessonStatus status, @Nullable CancelledBy cancelledBy, @Nullable String cancelReason,
             @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt, long version, boolean individuallyChanged,
-            @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
+            @Nullable String summary, @Nullable Instant summaryUpdatedAt,
             @Nullable String topic, @Nullable UUID planId) {
     }
 
@@ -283,12 +283,10 @@ public class LessonRepository {
     /** Saves the summary fields only: they are outside the lesson version used to lock time edits. */
     public void updateSummary(Lesson lesson) {
         jdbc.sql("""
-                update schedule.lessons set summary = :summary, next_plan = :nextPlan,
-                    summary_updated_at = :updatedAt where id = :id
+                update schedule.lessons set summary = :summary, summary_updated_at = :updatedAt where id = :id
                 """)
                 .param("id", lesson.id())
                 .param("summary", lesson.summary())
-                .param("nextPlan", lesson.nextPlan())
                 .param("updatedAt", lesson.summaryUpdatedAt())
                 .update();
     }
@@ -337,26 +335,6 @@ public class LessonRepository {
         } catch (DuplicateKeyException exception) {
             return false;
         }
-    }
-
-    /** The nearest planned lesson after {@code lesson} with the same participants: one student or one group. */
-    public Optional<Lesson> findNextPlanned(Lesson lesson) {
-        String owner = lesson.isGroup() ? " group_id = :groupId" : " group_id is null and" + OF_STUDENT;
-        var query = jdbc.sql(SELECT + " where status = 'SCHEDULED' and id <> :id and starts_at > :startsAt and"
-                + owner + ORDER + " limit 1")
-                .param("id", lesson.id())
-                .param("startsAt", lesson.startsAt());
-        query = lesson.isGroup() ? query.param("groupId", lesson.groupId())
-                : query.param("studentId", lesson.studentId());
-        return load(query.query(RecordRowMapper.of(Row.class)).list()).stream().findFirst();
-    }
-
-    /** Puts a topic into a lesson that has none; a filled topic stays. Does not bump the version. */
-    public void fillEmptyTopic(UUID lessonId, String topic) {
-        jdbc.sql("update schedule.lessons set topic = :topic where id = :id and (topic is null or topic = '')")
-                .param("id", lessonId)
-                .param("topic", topic)
-                .update();
     }
 
     public List<LessonNote> findNotes(UUID lessonId) {
@@ -476,7 +454,7 @@ public class LessonRepository {
                         row.seriesId(), row.seriesDate(), row.startsAt(), row.durationMinutes(), row.title(),
                         row.meetingUrl(), row.status(), row.cancelledBy(), row.cancelReason(),
                         row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()).restoreException(row.individuallyChanged())
-                        .restoreSummary(row.summary(), row.nextPlan(), row.summaryUpdatedAt()).describe(row.topic())
+                        .restoreSummary(row.summary(), row.summaryUpdatedAt()).describe(row.topic())
                         .restorePlan(row.planId())
                         .restoreAssignments(assignments.getOrDefault(row.id(), List.of())))
                 .toList();

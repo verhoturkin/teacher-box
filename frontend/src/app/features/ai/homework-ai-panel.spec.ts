@@ -73,7 +73,7 @@ describe('HomeworkAiPanel', () => {
     ]);
 
     expect(readableText(host)).not.toContain('Перевод');
-    await open(host, 'Промты');
+    await open(host, 'Промпты');
     expect(bodyText()).toContain('Тест на 10 вопросов');
     const search = requireElement(document.body, '.tb-ai-panel__search input', HTMLInputElement);
     typeInto(search, ' переведи ');
@@ -155,11 +155,11 @@ describe('HomeworkAiPanel', () => {
   it('saves the request to the library under a title from the menu', async () => {
     const { panel, host } = await render([]);
 
-    await open(host, 'Промты');
-    expect(bodyText()).toContain('Промтов пока нет');
+    await open(host, 'Промпты');
+    expect(bodyText()).toContain('Промптов пока нет');
     expect(bodyText()).toContain('Управлять библиотекой');
     panel.prompt.setValue('Тест на 5 вопросов\nс выбором ответа');
-    buttonByText(document.body, 'Сохранить запрос как промт').click();
+    buttonByText(document.body, 'Сохранить запрос как промпт').click();
     await fixture.whenStable();
     expect(panel.promptTitle.value).toBe('Тест на 5 вопросов');
 
@@ -177,16 +177,16 @@ describe('HomeworkAiPanel', () => {
     await fixture.whenStable();
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
 
-    await open(host, 'Промты');
+    await open(host, 'Промпты');
     expect(option('Тест')).toBeTruthy();
-    buttonByText(document.body, 'Сохранить запрос как промт').click();
+    buttonByText(document.body, 'Сохранить запрос как промпт').click();
     await fixture.whenStable();
     buttonByText(document.body, 'Сохранить').click();
     backend
       .expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' })
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Не удалось сохранить промт');
+    expect(readableText(host)).toContain('Не удалось сохранить промпт');
     buttonByText(document.body, 'Отмена').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Управлять библиотекой');

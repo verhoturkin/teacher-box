@@ -483,22 +483,21 @@ describe('LessonDetailsDialog', () => {
     expect(summary()).not.toBeNull();
   });
 
-  it('saves the summary in place: the card stays open and keeps the saved lesson', async () => {
-    const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
+  it('saves the summary by itself in place: the card stays open and keeps the saved lesson', async () => {
     await open(scheduledLesson({ topic: 'Past Simple' }), PAST);
     const text = requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement);
-    expect(text.value).toBe('Past Simple');
+    expect(text.value).toBe('');
 
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     typeInto(text, 'Итоги дня');
     await fixture.whenStable();
-    buttonByText(document.body, 'Сохранить').click();
-    await fixture.whenStable();
+    vi.advanceTimersByTime(1500);
+    vi.useRealTimers();
     const updated = scheduledLesson({ topic: 'Past Simple', summary: 'Итоги дня' });
     backend.expectOne('/api/teacher/schedule/lessons/l-1/summary').flush(updated);
     await fixture.whenStable();
 
     expect(changed).toEqual([updated]);
-    expect(success).toHaveBeenCalledExactlyOnceWith('Итоги сохранены');
     expect(fixture.componentInstance.visible()).toBe(true);
     expect(requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement).value).toBe(
       'Итоги дня',

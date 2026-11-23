@@ -157,7 +157,6 @@ export const en: Translation<typeof ru> = {
     delete: 'Delete',
   },
   planEditor: {
-    withAi: 'With AI',
     aiTitle: 'AI assistant',
     closeAi: 'Close the assistant',
     aiVideo: (name: string) => `Video: ${name}`,

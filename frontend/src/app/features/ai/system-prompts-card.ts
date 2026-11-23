@@ -162,7 +162,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
     }
   `,
   styles: `
-    /* the title of the card is the fold button: the sketch Ai «Системные промты» */
+    /* the title of the card is the fold button: the sketch Ai «Системные промпты» */
     .tb-fold {
       display: flex;
       align-items: center;

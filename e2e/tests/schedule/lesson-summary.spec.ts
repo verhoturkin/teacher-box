@@ -2,9 +2,9 @@ import { bearer, startSession } from '../support/session';
 import { type APIRequestContext, expect, test } from '@playwright/test';
 
 /**
- * Lesson summary (0.37.0, in the lesson card since 0.41.0): the teacher marks a lesson held, writes
- * the summary in the card and sends it; the student gets the notification and sees the summary in
- * «История занятий», another student sees nothing.
+ * Lesson summary (0.37.0, in the lesson card since 0.41.0, saved by itself and never sent since
+ * 0.62.2): the teacher marks a lesson held and writes the summary in the card; the student sees it in
+ * «История занятий» without a notification, another student sees nothing.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -13,7 +13,6 @@ const RUN = Date.now().toString(36);
 const NAME = `Итоги ${RUN}`;
 const OTHER = `Чужой ${RUN}`;
 const COVERED = `Past Simple ${RUN}`;
-const NEXT = `Повторить ошибки ${RUN}`;
 const HOUR = 3_600_000;
 
 test.describe.configure({ mode: 'serial' });
@@ -40,7 +39,7 @@ async function withLogin(
   return student.id;
 }
 
-test('the teacher shares a summary: the student gets it in the inbox and the history, another does not', async ({
+test('the teacher writes a summary: it saves itself, the student sees it in the history, another does not', async ({
   page,
   request,
 }) => {
@@ -70,13 +69,12 @@ test('the teacher shares a summary: the student gets it in the inbox and the his
     'true',
   );
 
-  // nothing to send until the summary has text; private notes are no longer written
-  await expect(card.getByRole('button', { name: 'Отправить ученику' })).toBeDisabled();
+  // no send, no next-lesson topic, no private note: the text saves itself
+  await expect(card.getByRole('button', { name: 'Отправить ученику' })).toHaveCount(0);
+  await expect(card.getByLabel('Тема следующего занятия')).toHaveCount(0);
   await expect(card.getByLabel('Заметка для себя')).toHaveCount(0);
   await card.getByLabel('Что прошли').fill(COVERED);
-  await card.getByLabel('Тема следующего занятия').fill(NEXT);
-  await card.getByRole('button', { name: 'Отправить ученику' }).click();
-  await expect(page.getByText('Итоги отправлены')).toBeVisible();
+  await expect(card.getByText(/сохранено · /)).toBeVisible();
 
   // the card stays open with the summary; opened again from the calendar it still has it
   await expect(card.getByLabel('Что прошли')).toHaveValue(COVERED);
@@ -87,19 +85,13 @@ test('the teacher shares a summary: the student gets it in the inbox and the his
     COVERED,
   );
 
-  // the student: the inbox record and the history, without the plan
+  // the student: the history has it, the inbox has no «Итоги урока»
   const mine = await bearer(request, `sum-${RUN}`, STUDENT_PASSWORD);
-  await expect
-    .poll(async () => {
-      const inbox = await request.get('/api/me/notifications?page=0&size=20', { headers: mine });
-      const body = (await inbox.json()) as { items: { title: string }[] };
-      return body.items.some((item) => item.title.startsWith('Итоги урока'));
-    })
-    .toBe(true);
   const own = await request.get('/api/me/schedule/history', { headers: mine });
-  const text = await own.text();
-  expect(text).toContain(COVERED);
-  expect(text).not.toContain(NEXT);
+  expect(await own.text()).toContain(COVERED);
+  const inbox = await request.get('/api/me/notifications?page=0&size=20', { headers: mine });
+  const body = (await inbox.json()) as { items: { title: string }[] };
+  expect(body.items.some((item) => item.title.startsWith('Итоги урока'))).toBe(false);
 
   const student = await page.context().newPage();
   await student.setViewportSize({ width: 1440, height: 900 });

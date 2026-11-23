@@ -138,30 +138,16 @@ class TeacherChatIntegrationTests {
                 .text()).isEqualTo("Слишком длинно: не больше 4000 символов.");
         assertThat(queries.lesson(lesson).summary()).isNull();
 
-        ChatStep.Ask saved = ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Прошли дроби")));
-        assertThat(saved.reply().text()).isEqualTo("Итоги сохранены. Отправить ученику?");
-        assertThat(labels(saved)).containsExactly("Отправить ученику", "Готово");
+        ChatStep.Done saved = done(unmarked.next(teacher(), write.state(), new ChatInput.Text("Прошли дроби")));
+        assertThat(saved.reply().text()).isEqualTo("Итоги сохранены: ученик увидит их в истории занятий.");
+        assertThat(saved.audit()).isEqualTo("lesson-summary-written " + lesson);
         assertThat(queries.lesson(lesson).summary()).isEqualTo("Прошли дроби");
-        assertThat(ask(unmarked.next(teacher(), saved.state(), new ChatInput.Text("?"))).reply().text())
-                .isEqualTo("Итоги сохранены. Отправить ученику?");
-
-        ChatStep.Done sent = done(unmarked.next(teacher(), saved.state(), new ChatInput.Choice("send")));
-        assertThat(sent.reply().text()).isEqualTo("Итоги отправлены.");
-        assertThat(sent.audit()).isEqualTo("lesson-summary-shared " + lesson);
     }
 
     @Test
-    void keepsTheSummaryWithoutSendingOrSkipsIt() {
+    void skipsTheSummary() {
         UUID maria = directory.addStudent("Мария Готово");
-        UUID lesson = plan(maria, null, Slots.past(clock), null);
         ChatAction unmarked = action(actions, "schedule.unmarked");
-        ChatStep.Ask offer = markConducted(unmarked, lesson);
-        ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
-        ChatStep.Ask saved = ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Повторили")));
-        ChatStep.Done kept = done(unmarked.next(teacher(), saved.state(), new ChatInput.Choice("ready")));
-        assertThat(kept.reply().text()).isEqualTo("Итоги сохранены, ученикам они не отправлены.");
-        assertThat(kept.audit()).isEqualTo("lesson-summary-written " + lesson);
-
         UUID other = plan(maria, null, Slots.past(clock).minus(Duration.ofDays(1)), null);
         ChatStep.Ask offerOther = markConducted(unmarked, other);
         ChatStep.Done skipped = done(unmarked.next(teacher(), offerOther.state(), new ChatInput.Choice("skip")));
@@ -181,9 +167,8 @@ class TeacherChatIntegrationTests {
         ChatStep.Ask confirm = ask(unmarked.next(teacher(), who.state(), new ChatInput.Choice("ready")));
         ChatStep.Ask offer = ask(unmarked.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
         ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
-        ChatStep.Ask saved = ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Группа повторила")));
-        assertThat(saved.reply().text()).isEqualTo("Итоги сохранены. Отправить ученикам?");
-        assertThat(labels(saved)).containsExactly("Отправить ученикам", "Готово");
+        ChatStep.Done saved = done(unmarked.next(teacher(), write.state(), new ChatInput.Text("Группа повторила")));
+        assertThat(saved.reply().text()).isEqualTo("Итоги сохранены: ученики увидят их в истории занятий.");
 
         UUID boris = directory.addStudent("Борис Пропуск");
         UUID missed = plan(boris, null, Slots.past(clock).minus(Duration.ofDays(2)), null);
@@ -195,21 +180,10 @@ class TeacherChatIntegrationTests {
     }
 
     @Test
-    void theSummaryDialogKeepsThePlanAndSurvivesAChangedLesson() {
-        UUID maria = directory.addStudent("Мария План");
-        UUID lesson = plan(maria, null, Slots.past(clock), null);
-        schedule.updateSummary(lesson, null, "Задачи на дроби");
+    void theSummaryDialogSurvivesAChangedLesson() {
         ChatAction unmarked = action(actions, "schedule.unmarked");
-        ChatStep.Ask offer = markConducted(unmarked, lesson);
-        ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
-        ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Итог")));
-        assertThat(queries.lesson(lesson).nextPlan()).isEqualTo("Задачи на дроби");
-
         ChatState broken = ChatState.of("lesson", "bad").withStep("summary");
         assertThat(done(unmarked.next(teacher(), broken, new ChatInput.Text("Итог"))).reply().text())
-                .isEqualTo("Не получилось записать итоги: занятие изменилось.");
-        ChatState brokenShare = ChatState.of("lesson", "bad").withStep("share");
-        assertThat(done(unmarked.next(teacher(), brokenShare, new ChatInput.Choice("send"))).reply().text())
                 .isEqualTo("Не получилось записать итоги: занятие изменилось.");
     }
 

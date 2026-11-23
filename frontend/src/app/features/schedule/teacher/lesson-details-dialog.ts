@@ -38,7 +38,6 @@ function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): Schedul
   return {
     ...lesson,
     summary: details.summary,
-    nextPlan: details.nextPlan,
     summaryUpdatedAt: details.summaryUpdatedAt,
     notes: details.notes,
   };

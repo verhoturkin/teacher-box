@@ -14,13 +14,12 @@ import org.jspecify.annotations.Nullable;
  *                      lesson; {@code null} otherwise
  * @param summary       «Что прошли», shared by the whole lesson; with a {@code planId} only the deviations from
  *                      the plan, {@code null} — all by the plan (466.3)
- * @param nextPlan      what the teacher planned for the next lesson
  * @param planId        the lesson plan of the lesson ({@code textbooks}); {@code null} — none
  * @param assignmentIds the homework of the lesson ({@code homework})
  */
 public record JournalLesson(UUID lessonId, Instant startsAt, int durationMinutes, @Nullable String title,
         @Nullable String topic, @Nullable UUID groupId, LessonOutcome outcome, @Nullable CancelledBy cancelledBy,
-        @Nullable String summary, @Nullable String nextPlan, @Nullable UUID planId, List<UUID> assignmentIds) {
+        @Nullable String summary, @Nullable UUID planId, List<UUID> assignmentIds) {
 
     public JournalLesson {
         assignmentIds = List.copyOf(assignmentIds);

@@ -39,7 +39,7 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
         String cancelled = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.next(clock), 60, true)));
         post(LESSONS + cancelled + "/cancel", "{}");
         put(LESSONS + planned + "/summary", "{\"summary\":\"Рано\"}");
-        put(LESSONS + first + "/summary", "{\"summary\":\"Past Simple\",\"nextPlan\":\"Повторить\"}");
+        put(LESSONS + first + "/summary", "{\"summary\":\"Past Simple\"}");
         oldNote(first, anna, "Личное");
 
         assertThat(get("/api/teacher/schedule/students/" + anna + "/history")).hasStatusOk().bodyJson()
@@ -50,7 +50,6 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
                     assertThat(json).extractingPath("$[1].lessonId").isEqualTo(first);
                     assertThat(json).extractingPath("$[1].status").isEqualTo("CONDUCTED");
                     assertThat(json).extractingPath("$[1].summary").isEqualTo("Past Simple");
-                    assertThat(json).extractingPath("$[1].nextPlan").isEqualTo("Повторить");
                     assertThat(json).extractingPath("$[1].note").isEqualTo("Личное");
                 });
         assertThat(mvc.get().uri("/api/teacher/schedule/students/" + anna + "/history")
@@ -113,7 +112,7 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
         UUID boris = directory.addStudent("Борис");
         String mine = held(anna, Slots.past(clock));
         String theirs = held(boris, Slots.past(clock));
-        put(LESSONS + mine + "/summary", "{\"summary\":\"Мои итоги\",\"nextPlan\":\"План\"}");
+        put(LESSONS + mine + "/summary", "{\"summary\":\"Мои итоги\"}");
         oldNote(mine, anna, "Личное");
         put(LESSONS + theirs + "/summary", "{\"summary\":\"Чужие итоги\"}");
 
@@ -123,7 +122,6 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
             assertThat(json).extractingPath("$.length()").isEqualTo(1);
             assertThat(json).extractingPath("$[0].lessonId").isEqualTo(mine);
             assertThat(json).extractingPath("$[0].summary").isEqualTo("Мои итоги");
-            assertThat(json).extractingPath("$[0].nextPlan").isNull();
             assertThat(json).extractingPath("$[0].note").isNull();
         });
         assertThat(response.getResponse().getContentAsString()).doesNotContain("Чужие").doesNotContain("Личное");

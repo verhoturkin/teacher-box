@@ -76,8 +76,8 @@ describe('AiSettingsPanel', () => {
     expect(text).toContain('deepseek-old (удалена) · 5 %');
     expect(hostElement(fixture).querySelectorAll('.tb-ai__bar > i')).toHaveLength(2);
     expect(text).toContain('Общий для всех подключений');
-    expect(text).toContain('Мои промты');
-    expect(text).toContain('Системные промты');
+    expect(text).toContain('Мои промпты');
+    expect(text).toContain('Системные промпты');
   });
 
   it('splits the month by model as shares of the tokens when there is no limit', async () => {
@@ -121,7 +121,7 @@ describe('AiSettingsPanel', () => {
 
   it('folds the system prompts, open at first', async () => {
     await render();
-    const fold = buttonByText(hostElement(fixture), 'Системные промты');
+    const fold = buttonByText(hostElement(fixture), 'Системные промпты');
     const body = hostElement(fixture).querySelector<HTMLElement>('#system-prompts');
 
     expect(fold.getAttribute('aria-expanded')).toBe('true');

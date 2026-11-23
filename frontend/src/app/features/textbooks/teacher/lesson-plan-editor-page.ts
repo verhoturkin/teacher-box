@@ -150,11 +150,11 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
                 <span class="tb-plan-editor__saved" role="status">{{ t.savedAt(at) }}</span>
               }
               @if (aiEnabled()) {
+                <!-- the homework editor's AI action: tonal, «ИИ-помощник», an icon alone on a phone -->
                 <p-button
-                  [label]="t.withAi"
+                  [label]="compact() ? undefined : t.aiTitle"
                   icon="tb-i tb-i-auto_awesome"
                   severity="secondary"
-                  variant="outlined"
                   [ariaLabel]="t.aiTitle"
                   [ariaExpanded]="single() ? modalAiOpen() : aiOpen()"
                   (onClick)="toggleAi()"

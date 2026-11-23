@@ -74,11 +74,8 @@ enum ScheduleChatTexts {
                     : "Напишите одним сообщением, что прошли на занятии (не больше " + max + " символов).";
         }
         @Override String summarySaved(boolean group) {
-            return "Итоги сохранены. Отправить " + (group ? "ученикам" : "ученику") + "?";
+            return "Итоги сохранены: " + (group ? "ученики увидят их" : "ученик увидит их") + " в истории занятий.";
         }
-        @Override String sendSummary(boolean group) { return group ? "Отправить ученикам" : "Отправить ученику"; }
-        @Override String summaryKept() { return "Итоги сохранены, ученикам они не отправлены."; }
-        @Override String summarySent() { return "Итоги отправлены."; }
         @Override String summaryFailed() { return "Не получилось записать итоги: занятие изменилось."; }
 
         @Override String nothingToChange(boolean cancel) {
@@ -269,11 +266,8 @@ enum ScheduleChatTexts {
                     : "Describe what you covered in one message (" + max + " characters maximum).";
         }
         @Override String summarySaved(boolean group) {
-            return "Summary saved. Send it to the " + (group ? "students" : "student") + "?";
+            return "Summary saved. " + (group ? "Your students" : "Your student") + " can see it in their lesson history.";
         }
-        @Override String sendSummary(boolean group) { return group ? "Send to students" : "Send to student"; }
-        @Override String summaryKept() { return "Summary saved. It hasn't been sent to the students."; }
-        @Override String summarySent() { return "Summary sent."; }
         @Override String summaryFailed() { return "Couldn't save the summary because the lesson has changed."; }
 
         @Override String nothingToChange(boolean cancel) { return "No lessons are available to " + (cancel ? "cancel" : "reschedule") + ". There are no upcoming lessons, or a request is already pending for each one."; }
@@ -474,12 +468,6 @@ enum ScheduleChatTexts {
     abstract String askSummary(int max, boolean byPlan);
 
     abstract String summarySaved(boolean group);
-
-    abstract String sendSummary(boolean group);
-
-    abstract String summaryKept();
-
-    abstract String summarySent();
 
     abstract String summaryFailed();
 

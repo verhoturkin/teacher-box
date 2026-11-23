@@ -47,7 +47,6 @@ describe('LessonPlanAiPanel', () => {
     fixture.componentRef.setInput('lesson', {
       topic: 'Present Perfect',
       previousSummary: 'Past Simple',
-      previousNextPlan: null,
     });
     await fixture.whenStable();
     backend.expectOne('/api/teacher/ai/prompts').flush(prompts);
@@ -85,7 +84,7 @@ describe('LessonPlanAiPanel', () => {
     expect(request.request.body).toEqual({
       prompt: 'Урок на час',
       courseName: 'Английский',
-      lesson: { topic: 'Present Perfect', previousSummary: 'Past Simple', previousNextPlan: null },
+      lesson: { topic: 'Present Perfect', previousSummary: 'Past Simple' },
       sources: [BOOK.source],
       context: [{ name: 'Уровень', value: 'A2' }],
     });
@@ -133,11 +132,50 @@ describe('LessonPlanAiPanel', () => {
     expect(panel.prompt.value).toBe('Переведи текст');
   });
 
+  it('saves the request as a prompt of the library, and says when it fails', async () => {
+    const { panel, host } = await render(true, []);
+    panel.prompt.setValue('Урок по Present Perfect\nс видео');
+    buttonByText(host, 'Мои запросы').click();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Сохранить запрос как промпт').click();
+    await fixture.whenStable();
+    expect(panel.promptTitle.value).toBe('Урок по Present Perfect');
+
+    panel.promptTitle.setValue(' ');
+    panel.savePrompt();
+    backend.expectNone('/api/teacher/ai/prompts');
+    panel.promptTitle.setValue('Урок с видео');
+    buttonByText(document.body, 'Сохранить').click();
+    const saved = backend.expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' });
+    expect(saved.request.body).toEqual({
+      title: 'Урок с видео',
+      text: 'Урок по Present Perfect\nс видео',
+    });
+    saved.flush(savedPrompt({ title: 'Урок с видео' }));
+    await fixture.whenStable();
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
+
+    buttonByText(host, 'Мои запросы').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Урок с видео');
+    buttonByText(document.body, 'Сохранить запрос как промпт').click();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Сохранить').click();
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' })
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Не удалось сохранить промпт');
+    buttonByText(document.body, 'Отмена').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Управлять библиотекой');
+  });
+
   it('offers the library when the teacher has no prompts yet', async () => {
     const { host } = await render(true, []);
     buttonByText(host, 'Мои запросы').click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Промтов пока нет');
+    expect(bodyText()).toContain('Промптов пока нет');
   });
 
   it('replaces the plan, discards a draft and reports a failure', async () => {

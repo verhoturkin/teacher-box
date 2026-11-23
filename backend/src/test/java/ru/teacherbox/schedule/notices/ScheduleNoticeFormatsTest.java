@@ -23,7 +23,6 @@ class ScheduleNoticeFormatsTest {
     @Test
     void formatsDatesInInstanceTimeZone() {
         assertThat(texts.date(LocalDate.of(2026, 1, 5))).isEqualTo("05.01.2026");
-        assertThat(texts.dayMonth(Instant.parse("2026-09-25T20:15:00Z"))).isEqualTo("26.09");
     }
 
     @Test

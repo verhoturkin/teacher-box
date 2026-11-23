@@ -28,7 +28,6 @@ public final class Lesson {
     public static final int MAX_DURATION_MINUTES = 600;
     public static final int MAX_TOPIC = 500;
     public static final int MAX_SUMMARY = 4000;
-    public static final int MAX_NEXT_PLAN = 1000;
 
     private final UUID id;
     private final @Nullable UUID groupId;
@@ -49,7 +48,6 @@ public final class Lesson {
     private Instant updatedAt;
     private long version;
     private @Nullable String summary;
-    private @Nullable String nextPlan;
     private @Nullable Instant summaryUpdatedAt;
     private @Nullable UUID planId;
     private List<UUID> assignmentIds = List.of();
@@ -381,22 +379,19 @@ public final class Lesson {
     }
 
     /** Restores the lesson summary kept outside the optimistic lock of the lesson. */
-    public Lesson restoreSummary(@Nullable String summaryText, @Nullable String nextPlanText,
-            @Nullable Instant updatedAt) {
+    public Lesson restoreSummary(@Nullable String summaryText, @Nullable Instant updatedAt) {
         summary = summaryText;
-        nextPlan = nextPlanText;
         summaryUpdatedAt = updatedAt;
         return this;
     }
 
     /**
-     * Writes «what we covered» and «what next»; blank text clears a field. Does not touch the version:
-     * the summary is not part of the time edits the version protects.
+     * Writes «what we covered»; blank text clears it. Does not touch the version: the summary is not
+     * part of the time edits the version protects.
      */
-    public void writeSummary(@Nullable String newSummary, @Nullable String newNextPlan, Instant now) {
+    public void writeSummary(@Nullable String newSummary, Instant now) {
         requireSummarizable(now);
         summary = bounded(newSummary, MAX_SUMMARY);
-        nextPlan = bounded(newNextPlan, MAX_NEXT_PLAN);
         summaryUpdatedAt = now;
     }
 
@@ -424,10 +419,6 @@ public final class Lesson {
 
     public @Nullable String summary() {
         return summary;
-    }
-
-    public @Nullable String nextPlan() {
-        return nextPlan;
     }
 
     public @Nullable Instant summaryUpdatedAt() {

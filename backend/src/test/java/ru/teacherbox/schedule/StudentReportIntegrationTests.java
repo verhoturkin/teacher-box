@@ -57,7 +57,7 @@ class StudentReportIntegrationTests extends ScheduleHttpTestSupport {
                 {"studentId":"%s","startsAt":"2020-02-29T21:30:00Z","topic":"Past Simple","allowOverlap":true}
                 """.formatted(anna)));
         put(LESSONS + "/" + first + "/outcome", "{\"outcome\":\"CONDUCTED\"}");
-        put(LESSONS + "/" + first + "/summary", "{\"summary\":\"Правильные глаголы\",\"nextPlan\":\"Неправильные\"}");
+        put(LESSONS + "/" + first + "/summary", "{\"summary\":\"Правильные глаголы\"}");
         UUID plan = plans.add("Past Simple", List.of(), List.of());
         put(LESSONS + "/" + first + "/plan", "{\"planId\":\"" + plan + "\"}");
         UUID assignment = assignments.add("Упражнения");
@@ -90,7 +90,6 @@ class StudentReportIntegrationTests extends ScheduleHttpTestSupport {
                             "CANCELLED", "LATE_CANCELLED", "MISSED", "EXCUSED"));
                     assertThat(json).extractingPath("$.lessons[0].topic").isEqualTo("Past Simple");
                     assertThat(json).extractingPath("$.lessons[0].summary").isEqualTo("Правильные глаголы");
-                    assertThat(json).extractingPath("$.lessons[0].nextPlan").isEqualTo("Неправильные");
                     assertThat(json).extractingPath("$.lessons[0].planId").isEqualTo(plan.toString());
                     assertThat(json).extractingPath("$.lessons[0].assignmentIds")
                             .isEqualTo(List.of(assignment.toString()));

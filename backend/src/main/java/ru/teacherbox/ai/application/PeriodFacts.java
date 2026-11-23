@@ -104,9 +104,6 @@ class PeriodFacts {
         } else if (byPlan && lesson.outcome() == LessonOutcome.ATTENDED) {
             line.append("\n  Прошли по плану");
         }
-        if (lesson.nextPlan() != null) {
-            line.append("\n  На следующий урок: ").append(lesson.nextPlan());
-        }
         return line.toString();
     }
 

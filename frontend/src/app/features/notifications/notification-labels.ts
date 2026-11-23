@@ -28,8 +28,6 @@ export const MUTABLE_TOPICS: readonly {
   readonly label: string;
   readonly hint: string;
   readonly teacherOnly: boolean;
-  /** Sent to students only (the teacher writes the summary, never receives it). */
-  readonly studentOnly?: boolean;
 }[] = [
   {
     topic: 'SCHEDULE',
@@ -50,13 +48,6 @@ export const MUTABLE_TOPICS: readonly {
     teacherOnly: false,
   },
   { topic: 'BILLING', label: T.topics.BILLING, hint: T.topics.BILLING_HINT, teacherOnly: false },
-  {
-    topic: 'LESSON_SUMMARY',
-    label: T.topics.LESSON_SUMMARY,
-    hint: T.topics.LESSON_SUMMARY_HINT,
-    teacherOnly: false,
-    studentOnly: true,
-  },
   {
     topic: 'ACCOUNT',
     label: T.topics.ACCOUNT,

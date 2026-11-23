@@ -36,7 +36,7 @@ import ru.teacherbox.testing.FakeUserDirectory;
 @NotificationsIntegrationTest
 class NoticesIntegrationTests {
 
-    private enum Kind implements NoticeKind { HOMEWORK_ASSIGNED, MEETING_LINK, SCHEDULE_REQUEST, LESSON_SUMMARY, UNHEARD_OF }
+    private enum Kind implements NoticeKind { HOMEWORK_ASSIGNED, MEETING_LINK, SCHEDULE_REQUEST, PAYMENT_RECORDED, UNHEARD_OF }
 
     @Autowired
     InboxRepository inbox;
@@ -129,14 +129,14 @@ class NoticesIntegrationTests {
 
     @Test
     void theKindDecidesWhatTheRecipientMuted() {
-        assertThat(NotificationTopic.of(NotificationKind.LESSON_SUMMARY)).isEqualTo(NotificationTopic.LESSON_SUMMARY);
-        assertThat(Preferences.DEFAULT.sendsToMessengers(NotificationKind.LESSON_SUMMARY)).isTrue();
-        assertThat(new Preferences(Set.of(NotificationTopic.LESSON_SUMMARY), null, null)
-                .sendsToMessengers(NotificationKind.LESSON_SUMMARY)).isFalse();
+        assertThat(NotificationTopic.of(NotificationKind.PAYMENT_RECORDED)).isEqualTo(NotificationTopic.BILLING);
+        assertThat(Preferences.DEFAULT.sendsToMessengers(NotificationKind.PAYMENT_RECORDED)).isTrue();
+        assertThat(new Preferences(Set.of(NotificationTopic.BILLING), null, null)
+                .sendsToMessengers(NotificationKind.PAYMENT_RECORDED)).isFalse();
         UUID student = connectedStudent("9304");
-        preferences.save(student, new Preferences(Set.of(NotificationTopic.LESSON_SUMMARY), null, null), Instant.now());
+        preferences.save(student, new Preferences(Set.of(NotificationTopic.BILLING), null, null), Instant.now());
 
-        notifications.notify(notice(student, Kind.LESSON_SUMMARY, null));
+        notifications.notify(notice(student, Kind.PAYMENT_RECORDED, null));
         assertThat(inbox.findPage(student, 0, 10)).hasSize(1);
         assertThat(deliveries.findByRecipient(student)).isEmpty();
 

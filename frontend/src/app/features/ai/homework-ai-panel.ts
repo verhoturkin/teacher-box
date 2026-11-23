@@ -83,7 +83,7 @@ export class HomeworkAiState {
 
 /**
  * The AI assistant over the assignment text: a request in the teacher's words (typed, or taken from the prompt
- * library in the «Промты» menu), the sources it reads, and the draft it brings — between the request and the text.
+ * library in the «Промпты» menu), the sources it reads, and the draft it brings — between the request and the text.
  * Nothing reaches the assignment until the teacher says so.
  */
 @Component({

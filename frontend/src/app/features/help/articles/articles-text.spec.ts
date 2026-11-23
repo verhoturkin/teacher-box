@@ -13,6 +13,11 @@ import { TEACHER_ARTICLES as TEACHER_RU } from './teacher/ru';
 
 type Texts = Readonly<Record<string, HelpArticleText>>;
 
+/** «промт» → «промпт» in any case form (469.1). */
+function promptSpelling(text: string): string {
+  return text.replace(/(п|П)ромт/g, '$1ромпт');
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -965,7 +970,7 @@ const CHECK_062: Readonly<Record<string, readonly (readonly [string, string, str
     [
       'students',
       'История занятий, оплат и заданий сохранится.',
-      'История занятий, оплат и заданий сохранится, а будущие занятия отменятся: его серии остановятся, из групповых занятий он выйдет.',
+      'История занятий, оплат и заданий сохранится, а будущие занятия отменятся, повтор его занятий прекратится, из групповых занятий он выйдет.',
     ],
   ],
   'teacher.en': [
@@ -983,6 +988,53 @@ const CHECK_062: Readonly<Record<string, readonly (readonly [string, string, str
       'students',
       'keeping lesson, payment and homework history.',
       "keeping lesson, payment and homework history. Upcoming lessons are cancelled: the student's recurring lessons stop and they leave upcoming group lessons.",
+    ],
+  ],
+};
+
+/** «Что прошли» in the lesson card: the toggle, the autosave, nothing sent (469.2–469.3): [topic, baseline, now]. */
+const SUMMARY_CARD: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      'Итоги начавшегося занятия (кроме отменённого и индивидуального «Пропуска») пишутся прямо в его карточке. «Что прошли» видят ученики занятия; пока итогов нет, там стоит тема занятия — дополните её. «Тема следующего занятия» подставится в тему следующего занятия, если там пусто. «Сохранить» только сохраняет; «Отправить ученику» сохраняет и присылает ученикам уведомление «Итоги урока». Если включён ИИ-помощник, «Черновик» составит «Что прошли» по теме, заданиям, привязанным к уроку, и вашим словам — это черновик, правьте его. Прошедшие занятия с итогами собраны в «Истории» на вкладке «Занятия» ученика и группы; там же видны заметки для себя, написанные раньше, — новых заметок больше нет. Через бота: после «Проведено» нажмите «Записать итоги» и отправьте текст.',
+      'Итоги начавшегося занятия (кроме отменённого и индивидуального «Пропуска») пишутся прямо в его карточке, в блоке «Что прошли». Текст видят ученики занятия в «Истории занятий»; он сохраняется сам через пару секунд после ввода и при закрытии карточки — кнопки сохранения и уведомления нет. Если включён ИИ-помощник, «Черновик» составит «Что прошли» по теме, заданиям, привязанным к уроку, и вашим словам — это черновик, правьте его. Прошедшие занятия с итогами собраны в «Истории» на вкладке «Занятия» ученика и группы; там же видны заметки для себя, написанные раньше, — новых заметок больше нет. Через бота: после «Проведено» нажмите «Записать итоги» и отправьте текст.',
+    ],
+    [
+      'schedule',
+      'Если к уроку привязан план, поля «Что прошли» сразу не видно: в итогах стоит **«Прошли по плану»**, и ученики увидят именно это. Если что-то пошло иначе, нажмите **«Не всё по плану»** и запишите только отличия — ученик увидит «Прошли по плану» и их. «Черновик» в таком уроке пишет только отличия по вашим словам, а бот спрашивает, что прошло не по плану. Отправить итоги можно и без отличий.',
+      'Если к уроку привязан план, у «Что прошли» есть переключатель **«По плану | Не всё по плану»**. При «По плану» поля нет, и ученики увидят «Прошли по плану». Если что-то пошло иначе, выберите **«Не всё по плану»** и запишите только отличия — ученик увидит «Прошли по плану» и их. «Черновик» в таком уроке пишет только отличия по вашим словам, а бот спрашивает, что прошло не по плану.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      '“What we covered” is visible to the lesson’s students and initially shows the lesson topic. “Next lesson topic” fills the next lesson’s topic if that field is empty. “Save” keeps your changes; “Send to student” or “Send to students” also sends a Lesson summary notification.',
+      '“What we covered” is visible to the lesson’s students in their lesson history. It saves automatically a couple of seconds after you stop typing and when you close the details; there is no Save button and no notification.',
+    ],
+    [
+      'schedule',
+      'If AI is enabled, “Generate draft” uses the lesson topic, the assignments linked to the lesson and your notes to suggest a summary. Review it before sending. Completed lessons with summaries appear in the student or group’s lesson history. In the bot, choose “Add summary” after recording a completed lesson.',
+      'If AI is enabled, “Generate draft” uses the lesson topic, the assignments linked to the lesson and your notes to suggest a summary. Review it before you leave it. Completed lessons with summaries appear in the student or group’s lesson history. In the bot, choose “Add summary” after recording a completed lesson.',
+    ],
+    [
+      'schedule',
+      'If the lesson has a plan, the summary shows **“Covered as planned”** instead of the “What we covered” field, and that is what students see. If something was different, choose **“Not everything went to plan”** and note only the changes: students see “Covered as planned” followed by them. For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan. You can send the summary without any changes.',
+      'If the lesson has a plan, “What we covered” has a toggle, **“As planned | With changes”**. With “As planned” there is no field, and students see “Covered as planned”. If something was different, choose **“With changes”** and note only the changes: students see “Covered as planned” followed by them. For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan.',
+    ],
+  ],
+  'student.ru': [
+    [
+      'schedule',
+      'Когда учитель отправит итоги, придёт уведомление «Итоги урока». Их можно прочитать в карточке занятия («Что прошли»), а все проведённые занятия собраны в списке «История занятий» на странице «Расписание». Тему уведомлений можно отключить в «Моём аккаунте». Если урок шёл по плану, там написано «Прошли по плану», а под «Не по плану» — что было иначе.',
+      'Что прошли на занятии, учитель пишет в его карточке («Что прошли»), а все проведённые занятия собраны в списке «История занятий» на странице «Расписание». Отдельного уведомления об итогах нет. Если урок шёл по плану, там написано «Прошли по плану», а под «Не по плану» — что было иначе.',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'When your teacher sends a summary, you will receive a “Lesson summary” notification. Open the lesson and read “What we covered”. Completed lessons are also listed in “Lesson history” on the Schedule page. You can turn off summary notifications in “My account”. If the lesson followed its plan, you will see “Covered as planned”, with anything different listed under “Changes to the plan”.',
+      'Your teacher writes what you covered in the lesson details (“What we covered”). Completed lessons are also listed in “Lesson history” on the Schedule page. There is no separate summary notification. If the lesson followed its plan, you will see “Covered as planned”, with anything different listed under “Changes to the plan”.',
     ],
   ],
 };
@@ -1453,12 +1505,19 @@ describe('help articles after the split into one file per topic', () => {
       ...(PROFILE_CARDS[name] ?? []),
       ...(ONE_CREATE[name] ?? []),
       ...(CHECK_062[name] ?? []),
+      ...(SUMMARY_CARD[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];
       if (isRecord(reviewed) && typeof reviewed['body'] === 'string') {
         expect(reviewed['body']).toContain(before);
         expected[topic] = { ...reviewed, body: reviewed['body'].replace(before, after) };
+      }
+    }
+    // 469.1: «промт» is spelt «промпт» everywhere
+    for (const [topic, reviewed] of Object.entries(expected)) {
+      if (isRecord(reviewed) && typeof reviewed['body'] === 'string') {
+        expected[topic] = { ...reviewed, body: promptSpelling(reviewed['body']) };
       }
     }
     expect(texts).toEqual(expected);

@@ -201,7 +201,6 @@ export function periodLesson(overrides: Partial<PeriodLesson> = {}): PeriodLesso
     outcome: 'ATTENDED',
     cancelledBy: null,
     summary: null,
-    nextPlan: null,
     planId: null,
     assignmentIds: [],
     ...overrides,

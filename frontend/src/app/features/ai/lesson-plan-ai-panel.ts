@@ -14,10 +14,12 @@ import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { RouterLink } from '@angular/router';
 import { ButtonDirective, ButtonIcon, ButtonLabel, Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
+import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Popover } from 'primeng/popover';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { Snackbar } from '@core/snackbar/snackbar';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { SearchField } from '@shared/ui/search-field';
@@ -47,8 +49,14 @@ export class LessonPlanAiState {
     nonNullable: true,
     validators: [Validators.required, Validators.maxLength(4_000)],
   });
+  readonly promptTitle = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.maxLength(100)],
+  });
   readonly library = signal<SavedPrompt[]>([]);
   readonly query = signal('');
+  readonly naming = signal(false);
+  readonly saving = signal(false);
   readonly draft = signal<LessonPlanDraft | null>(null);
   /** Keys of the chosen sources; `null` — the teacher has not chosen yet, all are taken. */
   readonly chosen = signal<ReadonlySet<string> | null>(null);
@@ -79,6 +87,7 @@ export class LessonPlanAiState {
     ButtonLabel,
     Checkbox,
     Message,
+    InputText,
     Popover,
     Textarea,
     MarkdownView,
@@ -86,40 +95,69 @@ export class LessonPlanAiState {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- the homework assistant's prompt library: a saved prompt becomes the request -->
-    <p-popover #prompts [ariaLabel]="p.prompts" (onHide)="query.set('')">
+    <p-popover #prompts [ariaLabel]="p.prompts" (onHide)="naming.set(false); query.set('')">
       <div class="tb-plan-ai__menu">
-        @if (library().length > 0) {
-          <tb-search-field
-            class="tb-plan-ai__search"
-            [label]="p.search"
-            [ngModel]="query()"
-            (ngModelChange)="query.set($event)"
-          />
-          <div class="tb-plan-ai__library" role="group" [attr.aria-label]="p.prompts">
-            @for (saved of found(); track saved.id) {
-              <button type="button" class="tb-plan-ai__option" (click)="use(saved)">
-                <span>{{ saved.title }}</span>
-                <small>{{ saved.text }}</small>
-              </button>
-            } @empty {
-              <p class="tb-hint">{{ p.notFound }}</p>
-            }
+        @if (naming()) {
+          <div class="tb-field">
+            <label for="plan-ai-prompt-title">{{ p.promptTitle }}</label>
+            <input
+              pInputText
+              id="plan-ai-prompt-title"
+              [formControl]="promptTitle"
+              autocomplete="off"
+              (keydown.enter)="savePrompt()"
+            />
+          </div>
+          <div class="tb-actions tb-plan-ai__end">
+            <p-button
+              [label]="p.cancel"
+              severity="secondary"
+              [text]="true"
+              (onClick)="naming.set(false)"
+            />
+            <p-button [label]="p.save" [loading]="saving()" (onClick)="savePrompt()" />
           </div>
         } @else {
-          <p class="tb-hint">{{ p.noPrompts }}</p>
+          @if (library().length > 0) {
+            <tb-search-field
+              class="tb-plan-ai__search"
+              [label]="p.search"
+              [ngModel]="query()"
+              (ngModelChange)="query.set($event)"
+            />
+            <div class="tb-plan-ai__library" role="group" [attr.aria-label]="p.prompts">
+              @for (saved of found(); track saved.id) {
+                <button type="button" class="tb-plan-ai__option" (click)="use(saved)">
+                  <span>{{ saved.title }}</span>
+                  <small>{{ saved.text }}</small>
+                </button>
+              } @empty {
+                <p class="tb-hint">{{ p.notFound }}</p>
+              }
+            </div>
+          } @else {
+            <p class="tb-hint">{{ p.noPrompts }}</p>
+          }
+          <div class="tb-plan-ai__menu-actions">
+            <p-button
+              [label]="p.savePrompt"
+              icon="tb-i tb-i-bookmark"
+              severity="secondary"
+              [text]="true"
+              (onClick)="startNaming()"
+            />
+            <a
+              pButton
+              routerLink="/teacher/settings/ai"
+              fragment="prompt-library"
+              severity="secondary"
+              [text]="true"
+            >
+              <i pButtonIcon aria-hidden="true" class="tb-i tb-i-settings"></i>
+              <span pButtonLabel>{{ p.manage }}</span>
+            </a>
+          </div>
         }
-        <div class="tb-plan-ai__menu-actions">
-          <a
-            pButton
-            routerLink="/teacher/settings/ai"
-            fragment="prompt-library"
-            severity="secondary"
-            [text]="true"
-          >
-            <i pButtonIcon aria-hidden="true" class="tb-i tb-i-settings"></i>
-            <span pButtonLabel>{{ p.manage }}</span>
-          </a>
-        </div>
       </div>
     </p-popover>
 
@@ -366,6 +404,10 @@ export class LessonPlanAiState {
       overflow: auto;
     }
 
+    .tb-plan-ai__end {
+      justify-content: flex-end;
+    }
+
     .tb-plan-ai__menu-actions {
       display: grid;
       justify-items: start;
@@ -445,6 +487,7 @@ export class LessonPlanAiPanel implements OnInit {
   protected readonly p = T.panel;
   private readonly menu = viewChild<Popover>('prompts');
   private readonly api = inject(AiApi);
+  private readonly snackbar = inject(Snackbar);
   private readonly model = inject(AiModelChoice);
 
   /** The plan has text a draft could go after. */
@@ -469,6 +512,9 @@ export class LessonPlanAiPanel implements OnInit {
   protected readonly context = this.state.context;
   protected readonly library = this.state.library;
   protected readonly query = this.state.query;
+  readonly promptTitle = this.state.promptTitle;
+  protected readonly naming = this.state.naming;
+  protected readonly saving = this.state.saving;
   protected readonly found = computed(() => {
     const query = this.query().trim().toLocaleLowerCase();
     return this.library().filter((saved) =>
@@ -495,6 +541,36 @@ export class LessonPlanAiPanel implements OnInit {
   protected use(saved: SavedPrompt): void {
     this.prompt.setValue(saved.text);
     this.menu()?.hide();
+  }
+
+  /** «Сохранить запрос как промпт»: the title starts as the request's first line. */
+  protected startNaming(): void {
+    this.promptTitle.setValue(this.prompt.value.trim().split('\n')[0]?.slice(0, 100) ?? '');
+    this.naming.set(true);
+  }
+
+  savePrompt(): void {
+    const title = this.promptTitle.value.trim();
+    if (title === '' || this.promptTitle.invalid || this.saving()) {
+      this.promptTitle.markAsTouched();
+      return;
+    }
+    this.saving.set(true);
+    this.api.savePrompt({ title, text: this.prompt.value.trim() }).subscribe({
+      next: (saved) => {
+        this.saving.set(false);
+        this.naming.set(false);
+        this.menu()?.hide();
+        this.library.update((prompts) =>
+          [...prompts, saved].sort((a, b) => a.title.localeCompare(b.title)),
+        );
+        this.snackbar.success(T.panel.saved);
+      },
+      error: (error: unknown) => {
+        this.saving.set(false);
+        this.error.set(describeError(error, T.library.failed));
+      },
+    });
   }
 
   protected isChosen(key: string): boolean {
