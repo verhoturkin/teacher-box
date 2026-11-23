@@ -1042,7 +1042,7 @@ const MATERIALS_PANES: Readonly<Record<string, readonly (readonly [string, strin
     [
       'textbooks',
       '- впишите название и нажмите «Добавить» — курс встанет в конец списка;\n- ✎ — переименовать (Enter сохраняет, Esc отменяет);\n- перетащите курс за ручку (или стрелками ↑ ↓ на ней) — в этом порядке идут чипы и списки;\n- 🗑 — удалить после подтверждения: учебники, задания, ученики и группы останутся, но без курса, а учебники «Ученикам курса» для них закроются.',
-      '- **«+ Новый курс»** под курсами — впишите название и нажмите Enter: курс встанет в конец списка (Esc — передумать);\n- «⋮» курса → **«Переименовать»** (Enter сохраняет, Esc отменяет);\n- перетащите курс за ручку (или стрелками ↑ ↓ на ней) — в этом порядке курсы идут везде;\n- «⋮» курса → **«Удалить…»** — после подтверждения: учебники, планы, задания, ученики и группы останутся, но без курса, а учебники «Ученикам курса» для них закроются.',
+      '- **«+ Новый курс»** под курсами — впишите название и нажмите Enter: курс встанет в конец списка (Esc — передумать);\n- «⋮» курса → **«Переименовать»** (Enter сохраняет, Esc отменяет);\n- перетащите курс за ручку (или стрелками ↑ ↓ на ней) — в этом порядке курсы идут везде; на телефоне — «⋮» курса → «Выше» или «Ниже»;\n- «⋮» курса → **«Удалить…»** — после подтверждения: учебники, планы, задания, ученики и группы останутся, но без курса, а учебники «Ученикам курса» для них закроются.',
     ],
     [
       'textbooks',
@@ -1125,7 +1125,7 @@ const MATERIALS_PANES: Readonly<Record<string, readonly (readonly [string, strin
     [
       'textbooks',
       '- add a course: type its name and choose “Add”; it goes to the end of the list;\n- rename it with ✎ (Enter saves, Esc cancels);\n- drag it by its handle, or use ↑ and ↓ on the handle, to set the order of the chips and lists;\n- delete it after confirming: its textbooks, assignments, students and groups stay without a course, and textbooks shared with its students close to them.',
-      '- **+ New course** below the courses: type a name and press Enter; it goes to the end of the list (Esc cancels);\n- a course’s “⋮” → **Rename** (Enter saves, Esc cancels);\n- drag a course by its handle, or use ↑ and ↓ on the handle, to set the order used everywhere;\n- a course’s “⋮” → **Delete…**, after confirming: its textbooks, plans, assignments, students and groups stay without a course, and textbooks shared with its students close to them.',
+      '- **+ New course** below the courses: type a name and press Enter; it goes to the end of the list (Esc cancels);\n- a course’s “⋮” → **Rename** (Enter saves, Esc cancels);\n- drag a course by its handle, or use ↑ and ↓ on the handle, to set the order used everywhere; on a phone, use the course’s “⋮” → Move up or Move down;\n- a course’s “⋮” → **Delete…**, after confirming: its textbooks, plans, assignments, students and groups stay without a course, and textbooks shared with its students close to them.',
     ],
     [
       'textbooks',

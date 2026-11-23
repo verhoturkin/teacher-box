@@ -974,6 +974,22 @@ keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
   divider (`outline-variant`) and a section headline (title small, on-surface-variant) — the
   drawer's divider and headline (**M3**): buttons of the same shape with a primary icon
   (`[actions]`, `(pressed)`; the editor's «Добавить: Видео, Доску»).
+- **Navigation menu of a pane** `nav.tb-nav-menu` (`styles/_nav-menu.scss`, 466.4, the list pane of
+  «Материалы»; sample `gallery/frame/nav-menu.ts`): the destinations of the **M3** navigation drawer
+  inside a pane, not a segmented list — one surface with 16 px corners and 12 / 8 px inside, no tile
+  or divider per row (*ours*, the sketch). `li.tb-nav-menu__item`: a 48 px pill (*ours*, as the
+  section list; 56 px and Body Large on the list screen of a phone, `tb-nav-menu--touch`), the 24 dp
+  icon, the label in Label Large, the count at the end in Label Medium, on-surface-variant; its
+  `tb-nav-menu__link` covers the item, buttons in it lie over the link. The chosen item
+  (`--current`, `aria-current` on the link) has the pill indicator of the rail — the `nav-indicator`
+  mixin (`styles/_mixins.scss`) that `side-nav.scss` uses too: secondary-container across the item,
+  springing out from its middle, on-secondary-container, Label Large emphasized, the filled icon;
+  hover 8 %, keyboard focus 10 % and the 3 px secondary ring. Groups: a headline
+  (`tb-nav-menu__headline`, Label Small, upper case, on-surface-variant — *ours*, **M3** shows Title
+  Small) and `hr.tb-nav-menu__divider` (1 px outline-variant, 12 px from the sides; **M3** drawer
+  divider). `--action` — an item that acts («+ Новый курс»): primary. `tb-nav-menu__more` — «⋮»
+  shown on the chosen item, on hover (where a pointer hovers) and on focus within; always in
+  `tb-nav-menu--touch`.
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under

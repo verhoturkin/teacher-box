@@ -5,24 +5,29 @@
 (`injectListDetail`, design-system §7).
 
 - **List pane** (`tb-pane kind="fixed" resizeKey="materials"`): the page header «Материалы» with
-  «?» and «Создать ▾», then one segmented list (`tb-list-group`) in a `nav`: «Все материалы»
-  (`stacks`), the courses in their order (`CourseList` of `@features/textbooks/parts`), «Без
-  курса» (`bookmark_remove`) and «Доски» (`co_present`). Each row is a link with its count as
-  trailing text (Label Small, **M3** list trailing text; the count is also in the link's name for
-  screen readers): all — textbooks + plans + assignments, a course — its three kinds, «Без
-  курса» — those without a course, «Доски» — the boards. The chosen row is filled with
-  secondary-container only while both panes stand (**M3**: the selected state is for two-pane
-  layouts). A row keeps the tab in sight: «Все материалы» → `?tab=<tab>`, a course →
+  «?» and «Создать ▾», then the navigation menu `nav.tb-nav-menu` (466.4, design-system §10: the
+  **M3** navigation drawer's destinations on one surface, not a segmented list): «Все материалы»
+  (`stacks`); the headline «КУРСЫ» and the courses in their order (`CourseList` of
+  `@features/textbooks/parts`) with «+ Новый курс» last; a divider; «Без курса»
+  (`bookmark_remove`) and «Доски» (`co_present`). Each item is a 48 px pill linked as a whole,
+  with its count at the end (Label Medium, on-surface-variant; the count is also in the link's
+  name for screen readers): all — textbooks + plans + assignments, a course — its three kinds,
+  «Без курса» — those without a course, «Доски» — the boards. The chosen item has the pill
+  indicator of the rail (secondary-container across the item, on-secondary-container, Label
+  Large emphasized) only while both panes stand (**M3**: the selected state is for two-pane
+  layouts). An item keeps the tab in sight: «Все материалы» → `?tab=<tab>`, a course →
   `?course=<id>&tab=<tab>`, «Без курса» → `?course=none&tab=<tab>`, «Доски» → `?tab=boards`.
-- **Courses** (`CourseList`, ADR-0071; `CoursesDialog` is gone): a row is the `collections_bookmark`
-  icon (decision 11; the portal logo keeps `school`), the name, the count, «⋮» and the trailing
-  drag handle (`tb-drag-handle`, ↑ ↓ on it, as the quiz and the videos; `PUT …/courses/order`, a
-  refused order rolls back). «⋮»: «Переименовать» (the name turns into a field in the row: Enter
-  saves, Esc cancels, ✓ ✕), «Выше» / «Ниже» (**M3**: a single-pointer alternative to the drag)
-  and «Удалить…» (danger confirmation). The last row «+ Новый курс» turns into a field: Enter
-  adds the course at the end, Esc or leaving it empty closes it. Every change saves at once; a
-  rename or a delete reads the textbooks, plans and assignments again (their course changed).
-- **Detail pane** (flexible): the chosen row's title (Title Large `h2` beside the list; on one
+- **Courses** (`CourseList`, ADR-0071; `CoursesDialog` is gone): an item is the drag handle
+  (`tb-drag-handle`, 24 px wide, ↑ ↓ on it, as the quiz and the videos; `PUT …/courses/order`, a
+  refused order rolls back), the `collections_bookmark` icon (decision 11; the portal logo keeps
+  `school`), the name, the count and «⋮» — shown on the chosen item, on hover and on focus within
+  the item (on a touch screen on the chosen one). «⋮»: «Переименовать» (the name turns into a
+  field in the item: Enter saves, Esc cancels, ✓ ✕), «Выше» / «Ниже» (**M3**: a single-pointer
+  alternative to the drag) and «Удалить…» (danger confirmation). «+ Новый курс» is a primary
+  item with `add` that turns into a field: Enter adds the course at the end, Esc or leaving it
+  empty closes it. Every change saves at once; a rename or a delete reads the textbooks, plans
+  and assignments again (their course changed).
+- **Detail pane** (flexible): the chosen item's title (Title Large `h2` beside the list; on one
   pane the page header with «back» to `/teacher/materials`, «?» and «Создать ▾»), the tabs
   «Учебники · Планы · Задания» (`tb-tabs`, **M3** primary tabs; fixed on a phone; none for
   «Доски»), one toolbar row — the search (`tb-search-field`; «Название или курс» on plans and
@@ -32,7 +37,10 @@
   changes) and the sort menu at the end; no chips. Then the `tb-material-grid` of
   `tb-material-card`s ([design-system §10](../design-system.md)).
 - **Phone and medium** (one pane): `/teacher/materials` without parameters is the list; any of
-  `?tab=` / `?course=` opens the detail, its header has «back» to the list. Old links
+  `?tab=` / `?course=` opens the detail, its header has «back» to the list. The list screen is
+  the same menu across the width (`tb-nav-menu--touch`): 56 px items in Body Large, no chevrons
+  (**M3** drawer items have none), every «⋮» shown (nothing is chosen there) and no drag handles
+  («Выше» / «Ниже» in «⋮» move a course); the FAB «Создать» stays. Old links
   `?tab=boards|textbooks|plans|assignments` keep working (a gone course id filters nothing and
   shows «Все материалы»). *Ours:* the detail pane stays mounted (hidden) on the list screen, so
   the counts are known.

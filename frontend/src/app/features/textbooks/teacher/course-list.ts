@@ -29,16 +29,19 @@ import { CoursesApi } from '../data-access/courses-api';
 import { Course } from '../data-access/courses.models';
 import { T } from '../i18n/texts';
 
+let lists = 0;
+
 /** The longest course name (`textbooks.courses.name`). */
 const MAX_NAME = 100;
 
 /**
- * The teacher's courses as rows of the list pane of «Материалы» (ADR-0071, roadmap 11 decision 9): each row
- * links to the course (`queryParams`), shows how many materials it has and keeps its actions in «⋮» —
- * «Переименовать» (in place: Enter saves, Esc cancels), «Выше» / «Ниже» (the single-pointer alternative to the
- * drag, M3) and «Удалить…» (danger confirmation). The trailing handle drags the row into order (↑ ↓ on it
- * too, as the quiz and the videos); the last row «+ Новый курс» turns into a field. Every change is
- * saved at once. The host is one `tb-list` of a `tb-list-group`: the page puts its own rows before and after.
+ * The teacher's courses as items of the navigation menu of «Материалы» (`tb-nav-menu`, ADR-0071, roadmap 11
+ * decision 9, 466.4): the headline «Курсы», then each course — the drag handle, the icon, the name linked to
+ * the course (`queryParams`), how many materials it has and «⋮» with «Переименовать» (in place: Enter
+ * saves, Esc cancels), «Выше» / «Ниже» (the single-pointer alternative to the drag, M3) and «Удалить…»
+ * (danger confirmation). The handle drags the course into order (↑ ↓ on it too, as the quiz and the
+ * videos); the last item «+ Новый курс» turns into a field. Every change is saved at once. The host is a
+ * group of the page's `nav.tb-nav-menu`: the page puts its own items before and after.
  */
 @Component({
   selector: 'tb-course-list',
@@ -55,24 +58,24 @@ const MAX_NAME = 100;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <span class="tb-nav-menu__headline" [id]="headlineId" aria-hidden="true">{{ t.title }}</span>
     <ul
-      class="tb-list tb-course-list"
+      class="tb-nav-menu__list tb-course-list"
       cdkDropList
       cdkDropListLockAxis="y"
-      [attr.aria-label]="t.title"
+      [attr.aria-labelledby]="headlineId"
       (cdkDropListDropped)="drop($event)"
     >
       @for (course of courses(); track course.id) {
         <li
+          class="tb-nav-menu__item"
           cdkDrag
           [cdkDragDisabled]="editing() !== null"
-          [class.tb-list__item--current]="course.id === current()"
+          [class.tb-nav-menu__item--current]="course.id === current()"
         >
-          <span class="tb-list__lead" aria-hidden="true"
-            ><i class="tb-i tb-i-collections_bookmark"></i
-          ></span>
           @if (editing() === course.id) {
-            <form class="tb-list__text" (submit)="submitted($event); rename(course)">
+            <i class="tb-i tb-i-collections_bookmark" aria-hidden="true"></i>
+            <form class="tb-course-list__form" (submit)="submitted($event); rename(course)">
               <input
                 #nameField
                 pInputText
@@ -84,50 +87,24 @@ const MAX_NAME = 100;
                 (keydown.escape)="cancel($event)"
               />
             </form>
-            <span class="tb-list__trail tb-list__trail--icons">
-              <p-button
-                icon="tb-i tb-i-check"
-                [text]="true"
-                [rounded]="true"
-                [ariaLabel]="c.save"
-                [loading]="busy.is('rename')"
-                (onClick)="rename(course)"
-              />
-              <p-button
-                icon="tb-i tb-i-close"
-                severity="secondary"
-                [text]="true"
-                [rounded]="true"
-                [ariaLabel]="c.cancel"
-                (onClick)="editing.set(null)"
-              />
-            </span>
+            <p-button
+              icon="tb-i tb-i-check"
+              [text]="true"
+              [rounded]="true"
+              [ariaLabel]="c.save"
+              [loading]="busy.is('rename')"
+              (onClick)="rename(course)"
+            />
+            <p-button
+              icon="tb-i tb-i-close"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              [ariaLabel]="c.cancel"
+              (onClick)="editing.set(null)"
+            />
           } @else {
-            <div class="tb-list__text">
-              <a
-                class="tb-list__title tb-list__link"
-                [routerLink]="[]"
-                [queryParams]="queryParams()(course.id)"
-                [attr.aria-current]="course.id === current() ? 'page' : null"
-                >{{ course.name
-                }}<span class="tb-sr-only">, {{ t.count(countOf(course)) }}</span></a
-              >
-            </div>
-            <span class="tb-list__trail tb-list__trail--icons">
-              <span class="tb-course-list__count" aria-hidden="true">{{ countOf(course) }}</span>
-              <p-button
-                icon="tb-i tb-i-more_vert"
-                severity="secondary"
-                [text]="true"
-                [rounded]="true"
-                [ariaLabel]="t.actions(course.name)"
-                [loading]="busy.is('remove:' + course.id)"
-                [tbAttributes]="{
-                  'aria-haspopup': 'menu',
-                  'aria-expanded': menuFor()?.id === course.id ? 'true' : 'false',
-                }"
-                (onClick)="openMenu(course, $event)"
-              />
+            @if (!touch()) {
               <button
                 type="button"
                 class="tb-drag-handle"
@@ -137,14 +114,37 @@ const MAX_NAME = 100;
               >
                 <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
               </button>
-            </span>
+            }
+            <i class="tb-i tb-i-collections_bookmark" aria-hidden="true"></i>
+            <a
+              class="tb-nav-menu__link"
+              [routerLink]="[]"
+              [queryParams]="queryParams()(course.id)"
+              [attr.aria-current]="course.id === current() ? 'page' : null"
+              >{{ course.name }}<span class="tb-sr-only">, {{ t.count(countOf(course)) }}</span></a
+            >
+            <span class="tb-nav-menu__count" aria-hidden="true">{{ countOf(course) }}</span>
+            <p-button
+              class="tb-nav-menu__more"
+              icon="tb-i tb-i-more_vert"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              [ariaLabel]="t.actions(course.name)"
+              [loading]="busy.is('remove:' + course.id)"
+              [tbAttributes]="{
+                'aria-haspopup': 'menu',
+                'aria-expanded': menuFor()?.id === course.id ? 'true' : 'false',
+              }"
+              (onClick)="openMenu(course, $event)"
+            />
           }
         </li>
       }
-      <li>
-        <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-add"></i></span>
+      <li class="tb-nav-menu__item tb-nav-menu__item--action">
+        <i class="tb-i tb-i-add" aria-hidden="true"></i>
         @if (adding()) {
-          <form class="tb-list__text" (submit)="submitted($event); add()">
+          <form class="tb-course-list__form" (submit)="submitted($event); add()">
             <input
               #nameField
               pInputText
@@ -158,22 +158,18 @@ const MAX_NAME = 100;
               (blur)="leaveAdd()"
             />
           </form>
-          <span class="tb-list__trail tb-list__trail--icons">
-            <p-button
-              icon="tb-i tb-i-check"
-              [text]="true"
-              [rounded]="true"
-              [ariaLabel]="c.add"
-              [loading]="busy.is('add')"
-              (onClick)="add()"
-            />
-          </span>
+          <p-button
+            icon="tb-i tb-i-check"
+            [text]="true"
+            [rounded]="true"
+            [ariaLabel]="c.add"
+            [loading]="busy.is('add')"
+            (onClick)="add()"
+          />
         } @else {
-          <div class="tb-list__text">
-            <button type="button" class="tb-list__title tb-list__link" (click)="startAdd()">
-              {{ t.newCourse }}
-            </button>
-          </div>
+          <button type="button" class="tb-nav-menu__link" (click)="startAdd()">
+            {{ t.newCourse }}
+          </button>
         }
       </li>
     </ul>
@@ -190,7 +186,9 @@ const MAX_NAME = 100;
       display: block;
     }
 
+    /* the dragged course is lifted off the menu: a surface of its own (M3 drag: elevation 2) */
     .tb-course-list > li.cdk-drag-preview {
+      background: var(--p-md-surface-container-high);
       box-shadow: var(--tb-elevation-2);
     }
 
@@ -198,37 +196,15 @@ const MAX_NAME = 100;
       opacity: 0.4;
     }
 
-    .tb-course-list .tb-list__trail {
+    .tb-course-list__form {
       display: flex;
-      align-items: center;
-      gap: var(--tb-space-1);
-    }
-
-    /* M3 list trailing text: label small, on-surface-variant */
-    .tb-course-list__count {
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-s);
-      letter-spacing: var(--tb-tracking-label-s);
-    }
-
-    .tb-list__item--current .tb-course-list__count {
-      color: inherit;
+      flex: 1 1 auto;
+      min-inline-size: 0;
     }
 
     .tb-course-list__field {
       inline-size: 100%;
       min-inline-size: 0;
-    }
-
-    button.tb-list__link {
-      padding: 0;
-      border: 0;
-      background: none;
-      color: inherit;
-      font: inherit;
-      letter-spacing: inherit;
-      text-align: start;
-      cursor: pointer;
     }
   `,
 })
@@ -241,15 +217,21 @@ export class CourseList {
   private readonly snackbar = inject(Snackbar);
   private readonly injector = inject(Injector);
   protected readonly busy = new Busy();
+  protected readonly headlineId = `tb-course-list-${String(++lists)}`;
 
   /** The teacher's courses in their order: the page gives them and hears every change. */
   readonly courses = model<readonly Course[]>([]);
-  /** The id of the course open beside the list; none — another row is. */
+  /** The id of the course open beside the list; none — another item is. */
   readonly current = input<string | null>(null);
   /** How many materials each course has, by its id. */
   readonly counts = input<ReadonlyMap<string, number>>(new Map());
   /** The query parameters of the page that open a course. */
   readonly queryParams = input.required<(courseId: string) => Params>();
+  /**
+   * The list screen of a phone (`tb-nav-menu--touch` on the menu): nothing is chosen there, so every «⋮» is
+   * shown; no drag handle — «Выше» / «Ниже» in «⋮» move a course (the single-pointer alternative, M3).
+   */
+  readonly touch = input(false);
   /** A course was renamed or deleted: the materials of the page show another course now. */
   readonly changed = output();
 

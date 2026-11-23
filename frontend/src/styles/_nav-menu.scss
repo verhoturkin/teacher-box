@@ -1,0 +1,199 @@
+@use './mixins' as *;
+
+/*
+ * The navigation menu of a list pane (`tb-nav-menu`, «Материалы» — 466.4): the destinations of the M3
+ * navigation drawer inside the pane, not a segmented list. One surface (16 px corners, 12 / 8 px
+ * inside — ours, the sketch), no tile or divider per row. An item (`li.tb-nav-menu__item`) is a 48 px
+ * pill (ours, as `tb-section-nav`; M3 drawer 56 dp — 56 px on the list screen of a phone): the 24 px
+ * icon (M3), the label in Label Large (M3) and the count at the end in Label Medium, on-surface-variant.
+ * Its link (`tb-nav-menu__link`) covers the whole item; buttons in it (a drag handle, «⋮») lie over the
+ * link. The chosen item (`tb-nav-menu__item--current`, `aria-current` on its link) has the pill
+ * indicator of the rail (`nav-indicator`, M3E: secondary-container across the item,
+ * on-secondary-container, Label Large emphasized, the filled icon). Hover lays the 8 % state layer,
+ * keyboard focus 10 % and the 3 px secondary ring (as the rail). Between the groups: a headline
+ * (`tb-nav-menu__headline`, Label Small, upper case — ours, M3 shows Title Small) and a 1 px
+ * outline-variant divider (`hr.tb-nav-menu__divider`, M3 drawer), 12 px from the sides (ours).
+ * `tb-nav-menu__item--action` — an item that acts instead of leading somewhere («+ Новый курс»):
+ * primary. `tb-nav-menu__more` — the item's «⋮»: shown on the chosen item, on hover and on focus
+ * within (on a touch screen on the chosen item), always in `tb-nav-menu--touch` (the list screen of
+ * a phone: nothing is chosen there).
+ */
+.tb-nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-half);
+  margin: 0;
+  padding: var(--tb-space-3) var(--tb-space-2);
+  border-radius: var(--tb-shape-lg);
+  background: var(--p-md-surface);
+}
+
+.tb-nav-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-half);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tb-nav-menu__item {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+  min-block-size: 3rem;
+  box-sizing: border-box;
+  padding: 0 var(--tb-space-4);
+  border-radius: var(--tb-shape-full);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
+
+  @include nav-indicator;
+
+  > .tb-i {
+    flex: none;
+    color: var(--p-md-on-surface-variant);
+    transition: font-variation-settings var(--tb-spring-fast-effects);
+  }
+
+  /* the buttons of the item lie over its link */
+  > :is(button, p-button, form) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* the trailing buttons of a field (✓ ✕): 40 px, the item keeps 4 px to its end */
+  &:has(> p-button:not(.tb-nav-menu__more)) {
+    padding-inline-end: var(--tb-space-1);
+  }
+
+  /* a course is dragged by the handle before its icon: 24 px wide, the icon 8 px after it */
+  &:has(> .tb-drag-handle) {
+    padding-inline-start: var(--tb-space-1);
+  }
+
+  > .tb-drag-handle {
+    inline-size: 1.5rem;
+    margin-inline-end: calc(-1 * var(--tb-space-1));
+  }
+}
+
+@media (hover: hover) {
+  .tb-nav-menu__item:has(> .tb-nav-menu__link):hover::after {
+    opacity: var(--tb-state-hover);
+  }
+}
+
+.tb-nav-menu__item:has(> .tb-nav-menu__link:focus-visible) {
+  outline: 3px solid var(--p-md-secondary);
+  outline-offset: 2px;
+
+  &::after {
+    opacity: var(--tb-state-focus);
+  }
+}
+
+.tb-nav-menu__link {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: start;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  /* the whole pill is the target */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+}
+
+.tb-nav-menu__count {
+  flex: none;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-m);
+  letter-spacing: var(--tb-tracking-label-m);
+}
+
+.tb-nav-menu__item--current {
+  --tb-icon-fill: 1;
+  color: var(--p-md-on-secondary-container);
+  font: var(--tb-type-label-l-emphasized);
+  letter-spacing: var(--tb-tracking-label-l-emphasized);
+
+  @include nav-indicator-on;
+
+  > .tb-i,
+  .tb-nav-menu__count {
+    color: inherit;
+  }
+}
+
+.tb-nav-menu__item--action {
+  color: var(--p-md-primary);
+
+  > .tb-i {
+    color: inherit;
+  }
+}
+
+.tb-nav-menu__more {
+  display: none;
+  /* «⋮» comes and goes on the item's own end padding: 4 px from the end, as a field's ✓ ✕ */
+  margin-inline-end: calc(-1 * var(--tb-space-3));
+}
+
+.tb-nav-menu__item:is(.tb-nav-menu__item--current, :focus-within) .tb-nav-menu__more,
+.tb-nav-menu__more:has([aria-expanded='true']),
+.tb-nav-menu--touch .tb-nav-menu__more {
+  display: block;
+}
+
+@media (hover: hover) {
+  .tb-nav-menu__item:hover .tb-nav-menu__more {
+    display: block;
+  }
+}
+
+.tb-nav-menu__headline {
+  display: block;
+  padding: var(--tb-space-4) var(--tb-space-4) var(--tb-space-2);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-s);
+  letter-spacing: var(--tb-tracking-label-s);
+  text-transform: uppercase;
+}
+
+.tb-nav-menu__divider {
+  block-size: 0;
+  margin: var(--tb-space-2) var(--tb-space-3);
+  border: 0;
+  border-block-start: 1px solid var(--p-md-outline-variant);
+}
+
+/* the list screen of a phone: the menu across the screen, 56 px items (M3 drawer), Body Large */
+.tb-nav-menu--touch .tb-nav-menu__item {
+  min-block-size: 3.5rem;
+  font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
+}

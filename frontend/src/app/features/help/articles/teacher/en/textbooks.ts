@@ -29,7 +29,7 @@ address.
 
 - **+ New course** below the courses: type a name and press Enter; it goes to the end of the list (Esc cancels);
 - a course’s “⋮” → **Rename** (Enter saves, Esc cancels);
-- drag a course by its handle, or use ↑ and ↓ on the handle, to set the order used everywhere;
+- drag a course by its handle, or use ↑ and ↓ on the handle, to set the order used everywhere; on a phone, use the course’s “⋮” → Move up or Move down;
 - a course’s “⋮” → **Delete…**, after confirming: its textbooks, plans, assignments, students and groups stay without a course, and textbooks \
 shared with its students close to them.
 

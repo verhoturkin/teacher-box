@@ -51,7 +51,7 @@ type CourseTab = Exclude<MaterialsTab, 'boards'>;
 /** What «Создать» makes. */
 type CreateKind = 'textbook' | 'plan' | 'assignment' | 'board';
 
-/** A row of the list pane the page draws itself: «Все материалы», «Без курса», «Доски». */
+/** An item of the menu of the list pane the page draws itself: «Все материалы», «Без курса», «Доски». */
 interface PlaceRow {
   readonly key: 'all' | 'none' | 'boards';
   readonly label: string;
@@ -79,13 +79,13 @@ const CREATE_ICONS: Record<CreateKind, string> = {
 };
 
 /**
- * Teacher: «Материалы» as a list-detail (M3 canonical layout; roadmap 11, decisions 9–12). The list pane:
- * «Все материалы», the courses in their order (`CourseList`: drag, «⋮» rename / delete, «+ Новый курс»),
- * «Без курса» and «Доски», each with how many materials it holds. The detail pane: the chosen row's title,
+ * Teacher: «Материалы» as a list-detail (M3 canonical layout; roadmap 11, decisions 9–12). The list pane is a
+ * navigation menu (`tb-nav-menu`, 466.4): «Все материалы», the headline «Курсы» and the courses in their order (`CourseList`: drag, «⋮» rename / delete, «+ Новый курс»),
+ * a divider, «Без курса» and «Доски», each with how many materials it holds. The detail pane: the chosen item's title,
  * the tabs «Учебники · Планы · Задания» (none for «Доски») and one toolbar row — search, the «Фильтр» menu
  * (the textbook kind, the board kind) and the sort. The address keeps the state: `?course=<id>|none` and
  * `?tab=…` (`?tab=boards` is the row «Доски»; old links `?tab=…` still open their kind). On a phone the list
- * and the detail are two screens: a row opens the detail, «back» leads to the list. One create action:
+ * and the detail are two screens: an item opens the detail, «back» leads to the list. One create action:
  * «Создать ▾» in the header (the FAB menu on a phone) — Учебник · План урока · Задание · Доска — with the
  * chosen course prefilled. The feeds belong to their modules and stay mounted so every count is known.
  */
@@ -136,32 +136,34 @@ const CREATE_ICONS: Record<CreateKind, string> = {
               }
             </tb-page-header>
           </div>
-          <nav class="tb-list-group" [attr.aria-label]="t.places">
-            <div>
-              <ul class="tb-list">
-                <ng-container
-                  [ngTemplateOutlet]="placeRow"
-                  [ngTemplateOutletContext]="{ $implicit: allRow() }"
-                />
-              </ul>
-            </div>
+          <nav
+            class="tb-nav-menu"
+            [class.tb-nav-menu--touch]="layout.single()"
+            [attr.aria-label]="t.places"
+          >
+            <ul class="tb-nav-menu__list">
+              <ng-container
+                [ngTemplateOutlet]="placeItem"
+                [ngTemplateOutletContext]="{ $implicit: allRow() }"
+              />
+            </ul>
             <tb-course-list
               [(courses)]="courses"
               [current]="layout.single() ? null : currentCourse()"
               [counts]="courseCounts()"
               [queryParams]="courseParams"
+              [touch]="layout.single()"
               (changed)="reload()"
             />
-            <div>
-              <ul class="tb-list">
-                @for (row of trailingRows(); track row.key) {
-                  <ng-container
-                    [ngTemplateOutlet]="placeRow"
-                    [ngTemplateOutletContext]="{ $implicit: row }"
-                  />
-                }
-              </ul>
-            </div>
+            <hr class="tb-nav-menu__divider" />
+            <ul class="tb-nav-menu__list">
+              @for (row of trailingRows(); track row.key) {
+                <ng-container
+                  [ngTemplateOutlet]="placeItem"
+                  [ngTemplateOutletContext]="{ $implicit: row }"
+                />
+              }
+            </ul>
           </nav>
         </tb-pane>
       }
@@ -262,21 +264,17 @@ const CREATE_ICONS: Record<CreateKind, string> = {
         </div>
       </tb-pane>
     </tb-panes>
-    <ng-template #placeRow let-row>
-      <li [class.tb-list__item--current]="isCurrent(row.key)">
-        <span class="tb-list__lead" aria-hidden="true"
-          ><i class="tb-i" [class]="row.icon"></i
-        ></span>
-        <div class="tb-list__text">
-          <a
-            class="tb-list__title tb-list__link"
-            [routerLink]="[]"
-            [queryParams]="row.queryParams"
-            [attr.aria-current]="isCurrent(row.key) ? 'page' : null"
-            >{{ row.label }}<span class="tb-sr-only">, {{ t.count(row.count) }}</span></a
-          >
-        </div>
-        <span class="tb-list__trail tb-materials__count" aria-hidden="true">{{ row.count }}</span>
+    <ng-template #placeItem let-row>
+      <li class="tb-nav-menu__item" [class.tb-nav-menu__item--current]="isCurrent(row.key)">
+        <i class="tb-i" [class]="row.icon" aria-hidden="true"></i>
+        <a
+          class="tb-nav-menu__link"
+          [routerLink]="[]"
+          [queryParams]="row.queryParams"
+          [attr.aria-current]="isCurrent(row.key) ? 'page' : null"
+          >{{ row.label }}<span class="tb-sr-only">, {{ t.count(row.count) }}</span></a
+        >
+        <span class="tb-nav-menu__count" aria-hidden="true">{{ row.count }}</span>
       </li>
     </ng-template>
     <p-menu #createPopup [model]="createMenu" [popup]="true" appendTo="body" />
@@ -313,17 +311,6 @@ const CREATE_ICONS: Record<CreateKind, string> = {
 
     .tb-materials__sort {
       margin-inline-start: auto;
-    }
-
-    /* M3 list trailing text: label small, on-surface-variant */
-    .tb-materials__count {
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-s);
-      letter-spacing: var(--tb-tracking-label-s);
-    }
-
-    .tb-list__item--current .tb-materials__count {
-      color: inherit;
     }
 
     @media (width < 37.5em) {

@@ -68,6 +68,13 @@ Decisions 9–15 of roadmap/11 «UI review of 0.60.0»; every interface change w
   «Что прошли» holds only the deviations (hidden behind «Не всё по плану»); `LessonJournal` and
   the period-summary facts give the plan's title and the deviations; tests, `docs/modules/*.md`,
   help, wiki.
+- [x] 466.4 **F** *complex* — the course pane of «Материалы» as a navigation menu, as the sketch
+  (the teacher's remark after 466.1): one surface, 48 px pill items with the count at the end, the
+  rail's pill indicator on the chosen item (mixin `nav-indicator`, shared with `side-nav`), the
+  headline «КУРСЫ», «+ Новый курс» in primary, a divider before «Без курса» and «Доски»; a course
+  has the handle before its icon and «⋮» on the chosen item, on hover and on focus; on the phone's
+  list screen 56 px items, every «⋮», no handles. The shared style `tb-nav-menu` with its gallery
+  sample; help (ru/en), wiki, `docs/screens/materials.md`, `docs/design-system.md`.
 
 ### 467. Release 0.61.0
 

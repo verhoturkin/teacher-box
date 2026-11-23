@@ -49,17 +49,33 @@ describe('CourseList', () => {
   }
 
   it('links every course with its count and marks the current one', () => {
-    const links = [...host().querySelectorAll<HTMLAnchorElement>('a.tb-list__link')];
+    const links = [...host().querySelectorAll<HTMLAnchorElement>('a.tb-nav-menu__link')];
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/?course=a2&tab=plans',
       '/?course=b1&tab=plans',
     ]);
     expect(links[0]?.textContent).toContain('A2, 4 материала');
     expect(links[1]?.getAttribute('aria-current')).toBe('page');
-    expect(host().querySelector('.tb-list__item--current')?.textContent).toContain('B1');
+    expect(host().querySelector('.tb-nav-menu__item--current')?.textContent).toContain('B1');
     expect(
-      [...host().querySelectorAll('.tb-course-list__count')].map((count) => count.textContent),
+      [...host().querySelectorAll('.tb-nav-menu__count')].map((count) => count.textContent),
     ).toEqual(['4', '0']);
+  });
+
+  it('is a group of the menu headed «Курсы», each course with its handle and «⋮»', () => {
+    const list = requireElement(host(), 'ul.tb-nav-menu__list', HTMLUListElement);
+    const headline = host().querySelector(`#${list.getAttribute('aria-labelledby') ?? ''}`);
+    expect(headline?.textContent.trim()).toBe('Курсы');
+    expect(host().querySelectorAll('.tb-drag-handle')).toHaveLength(2);
+    expect(host().querySelectorAll('.tb-nav-menu__more')).toHaveLength(2);
+    expect(host().querySelector('.tb-nav-menu__item--action')?.textContent).toContain('Новый курс');
+  });
+
+  it('has no drag handles on the list screen of a phone: «⋮» moves the courses', async () => {
+    fixture.componentRef.setInput('touch', true);
+    await fixture.whenStable();
+    expect(host().querySelector('.tb-drag-handle')).toBeNull();
+    expect(host().querySelectorAll('.tb-nav-menu__more')).toHaveLength(2);
   });
 
   it('adds a course from «+ Новый курс»; a blank name or Escape closes the field', async () => {

@@ -94,16 +94,14 @@ describe('MaterialsPage', () => {
   /** The rows of the list pane: the name and the count. */
   function rows(): string[] {
     return [...host.querySelectorAll('nav li')].map((row) => {
-      const label = row.querySelector('.tb-list__link')?.firstChild?.textContent?.trim() ?? '';
-      const count = row
-        .querySelector('.tb-materials__count, .tb-course-list__count')
-        ?.textContent.trim();
+      const label = row.querySelector('.tb-nav-menu__link')?.firstChild?.textContent?.trim() ?? '';
+      const count = row.querySelector('.tb-nav-menu__count')?.textContent.trim();
       return count === undefined ? label : `${label} ${count}`;
     });
   }
 
   function link(label: string): HTMLAnchorElement {
-    const found = [...host.querySelectorAll<HTMLAnchorElement>('nav a.tb-list__link')].find(
+    const found = [...host.querySelectorAll<HTMLAnchorElement>('nav a.tb-nav-menu__link')].find(
       (item) => item.textContent.includes(label),
     );
     if (found === undefined) throw new Error(`No row ${label}`);
@@ -315,6 +313,7 @@ describe('MaterialsPage', () => {
       expect(detail?.style.display).toBe('none');
       expect(rows()[0]).toBe('Все материалы 6');
       expect(current()).toBeUndefined();
+      expect(host.querySelector('nav.tb-nav-menu')?.classList).toContain('tb-nav-menu--touch');
       expect(host.querySelector('.tb-page-header [aria-haspopup="menu"]')).toBeNull();
 
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
