@@ -949,6 +949,44 @@ const ONE_CREATE: Readonly<Record<string, readonly (readonly [string, string, st
   ],
 };
 
+/** One caption language said at once, saved prompts in the plan's AI pane, lessons of a deactivated student (468.1–468.3): [topic, baseline, now]. */
+const CHECK_062: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'homework',
+      '«Сменить язык» открывает меню дорожек; расшифровку',
+      '«Сменить язык» открывает меню дорожек (если других языков нет, под плиткой так и написано); расшифровку',
+    ],
+    [
+      'ai',
+      'ИИ напишет название, текст и страницы учебников ([Учебники](/teacher/help/textbooks)).',
+      'ИИ напишет название, текст и страницы учебников ([Учебники](/teacher/help/textbooks)). «Мои запросы» подставят сохранённый промт.',
+    ],
+    [
+      'students',
+      'История занятий, оплат и заданий сохранится.',
+      'История занятий, оплат и заданий сохранится, а будущие занятия отменятся: его серии остановятся, из групповых занятий он выйдет.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'homework',
+      '“Change language” lists the tracks;',
+      '“Change language” lists the tracks (if there are no other languages, the tile says so);',
+    ],
+    [
+      'ai',
+      'the draft brings a title, the plan text and textbook pages ([Textbooks](/teacher/help/textbooks)).',
+      'the draft brings a title, the plan text and textbook pages ([Textbooks](/teacher/help/textbooks)). “My prompts” fills in a saved prompt.',
+    ],
+    [
+      'students',
+      'keeping lesson, payment and homework history.',
+      "keeping lesson, payment and homework history. Upcoming lessons are cancelled: the student's recurring lessons stop and they leave upcoming group lessons.",
+    ],
+  ],
+};
+
 /** The release review of 0.61.0 (467.1): the AI lesson plan in the AI article, [topic, baseline, now]. */
 const RELEASE_061: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -1414,6 +1452,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(RELEASE_061[name] ?? []),
       ...(PROFILE_CARDS[name] ?? []),
       ...(ONE_CREATE[name] ?? []),
+      ...(CHECK_062[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

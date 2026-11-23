@@ -78,7 +78,9 @@ class YoutubeCaptions implements VideoCaptions {
         Source source = (track == null ? choose(sources)
                 : sources.stream().filter(candidate -> candidate.track().equals(track)).findFirst())
                 .orElseThrow(YoutubeCaptions::none);
-        return new Captions(title(player), source.language(), source.automatic(), cues(download(videoId, source)));
+        boolean others = sources.stream().map(Source::track).distinct().count() > 1;
+        return new Captions(title(player), source.language(), source.automatic(), cues(download(videoId, source)),
+                others);
     }
 
     private JsonNode playable(String videoId) {

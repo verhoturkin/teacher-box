@@ -61,7 +61,8 @@ Open the student’s Profile tab to manage access:
 
 - **New invitation** creates another link before the student has activated their account.
 - **Reset password** creates a reset link for an existing account.
-- **Deactivate account…** prevents sign-in while keeping lesson, payment and homework history.
+- **Deactivate account…** prevents sign-in while keeping lesson, payment and homework history. Upcoming lessons are \
+cancelled: the student's recurring lessons stop and they leave upcoming group lessons.
 - **Restore access** lets a deactivated student sign in again.
 
 ## Parents

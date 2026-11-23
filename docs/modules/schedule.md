@@ -44,7 +44,8 @@ ADRs: [0008](../adr/0008-schedule.md),
   `allowOverlap`.
 - **Participants** (`lesson_participants`): one for an individual lesson; a group series uses the current
   members; `GroupChanged` updates only future planned lessons; `GroupArchived` stops series and cancels future
-  lessons.
+  lessons. `StudentDeactivated` stops the student's own series, cancels their planned lessons
+  («Ученик отключён») and takes them off planned group lessons; reactivation brings nothing back.
 - **Outcome:** after the start the teacher marks «Проведено» / «Пропуск»; for a group — per participant
   (attended, missed — paid, excused — not paid). Each mark publishes `LessonCompleted` with a `completionId`;
   correcting it publishes `LessonCompletionRevoked`. Lesson statuses: scheduled, conducted, missed, cancelled;

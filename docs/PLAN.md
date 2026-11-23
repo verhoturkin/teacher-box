@@ -29,6 +29,11 @@ Feature proposals with detailed plans (progress report, packages, invoices, pare
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
 
+Left from 0.62.1 (468): a video with captions in one language was checked live only by the
+teacher; «Мои запросы» of the plan's AI pane was not checked live (no AI on the dev instance).
+A deactivated student who stays a member of a group may come back into lessons a group series
+generates later (`ScheduleDirectory.membersOf` does not filter by access) — check and decide.
+
 Left from 0.62.0 (467.6): the AI side pane of the lesson-plan editor was not checked live; neither
 was the course saved from Профиль surviving a reload.
 

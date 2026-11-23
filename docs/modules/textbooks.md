@@ -114,7 +114,7 @@ are in the full reset; files are in the portal backup.
 | `GET /api/teacher/textbooks/{id}/file`, `GET /{id}/pages/{n}` (picture), `GET /{id}/cover` | teacher |
 | `GET /api/me/textbooks` (with `groupNames`, `courseName`, newest change first), `GET /api/me/textbooks/{id}/file`, `GET /api/me/textbooks/{id}/cover` (404 for a textbook of others and for a Word file) | student |
 | `GET /api/teacher/textbooks/plans` (`?bank=true` — the bank with `uses`, else the working plans; last changed first), `POST {title, body, courseId, bank, textbooks: [{textbookId, pages}], videos}` (201), `GET/PUT/DELETE …/plans/{id}` (`PUT` — the whole content with `version`; `DELETE` 204), `POST …/{id}/finish` («Готово»), `POST …/{id}/bank` (save / update the original), `POST …/{id}/use {lessonId}` → 201 `{lessonId, plan}` | teacher |
-| `POST /api/teacher/textbooks/videos/captions` `{url}` → `{title, tracks: [{language, automatic}], suggested}`; `POST …/videos/transcript` `{url, language?, automatic?}` → `{title, language, automatic, transcript, truncated}` (nothing is saved) | teacher |
+| `POST /api/teacher/textbooks/videos/captions` `{url}` → `{title, tracks: [{language, automatic}], suggested}`; `POST …/videos/transcript` `{url, language?, automatic?}` → `{title, language, automatic, transcript, truncated, otherTracks}` (`otherTracks` — the video has another track) (nothing is saved) | teacher |
 
 Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` for `/api/teacher/textbooks`.
 

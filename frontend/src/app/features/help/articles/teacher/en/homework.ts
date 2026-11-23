@@ -25,7 +25,7 @@ that board selected. A quiz is not a material: add questions on the Quiz tab. Yo
 other links open in a new tab. Students see the videos in the order of the tiles, so drag them to reorder. Each tile shows whether it has a \
 transcript and whether students can see it. For a YouTube link, the portal imports the captions in the video’s language straight away (the \
 creator’s, otherwise auto-generated ones), and the tile shows “Captions: English, auto-generated · Change language”. “Change language” lists the \
-tracks; if you have edited the transcript, the portal asks before replacing it, and it never re-imports an existing transcript. If there are no \
+tracks (if there are no other languages, the tile says so); if you have edited the transcript, the portal asks before replacing it, and it never re-imports an existing transcript. If there are no \
 captions or they can’t be fetched, the tile says “This video has no captions” or “Couldn’t get the captions · Retry”. Select the settings button \
 on a tile to open the video in a window over the editor (full screen on a phone). There you can rename the video, import YouTube captions (choose \
 a track from the menu), load an .srt or .vtt \

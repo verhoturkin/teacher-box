@@ -382,7 +382,10 @@ describe('LessonPlanEditorPage', () => {
       .forEach((request) => {
         if (request.request.url.endsWith('/tags') || request.request.url.endsWith('/students')) {
           request.flush([]);
-        } else if (request.request.url.endsWith('/providers')) {
+        } else if (
+          request.request.url.endsWith('/providers') ||
+          request.request.url.endsWith('/prompts')
+        ) {
           request.flush([]);
         } else {
           request.flush(null);

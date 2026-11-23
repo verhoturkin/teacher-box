@@ -189,6 +189,7 @@ describe('VideoSection', () => {
       automatic: true,
       transcript: '[0:05] We play\nno time',
       truncated: false,
+      otherTracks: true,
     });
     await fixture.whenStable();
 
@@ -213,6 +214,7 @@ describe('VideoSection', () => {
       automatic: true,
       transcript: '[0:05] We',
       truncated: false,
+      otherTracks: true,
     });
     await fixture.whenStable();
     expect(confirmation.confirm).not.toHaveBeenCalled();
@@ -239,6 +241,7 @@ describe('VideoSection', () => {
       automatic: true,
       transcript: '[0:05] We play',
       truncated: false,
+      otherTracks: true,
     });
     await fixture.whenStable();
     expect(first(section)).toMatchObject({
@@ -265,6 +268,7 @@ describe('VideoSection', () => {
       automatic: false,
       transcript: '[0:05] Мы играем',
       truncated: false,
+      otherTracks: true,
     });
     await fixture.whenStable();
     expect(confirmation.confirm).not.toHaveBeenCalled();
@@ -285,6 +289,7 @@ describe('VideoSection', () => {
       automatic: true,
       transcript: '[0:00] Theirs',
       truncated: false,
+      otherTracks: true,
     });
     await fixture.whenStable();
     expect(first(section)).toMatchObject({ title: '', transcript: '[0:00] Моё' });
@@ -310,9 +315,12 @@ describe('VideoSection', () => {
       automatic: false,
       transcript: '[0:00] Hi',
       truncated: false,
+      otherTracks: false,
     });
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Субтитры: английский · Сменить язык');
+    // one track: the tile says so at once and offers no «Сменить язык»
+    expect(readableText(host)).toContain('Субтитры: английский. Других языков у этого видео нет');
+    expect(readableText(host)).not.toContain('Сменить язык');
 
     // removed before the answer: nothing comes back to it; other hosts ask nothing
     typeInto(link, 'https://youtu.be/aaaaaaaaaaa');
@@ -324,7 +332,14 @@ describe('VideoSection', () => {
     await fixture.whenStable();
     const gone = backend.expectOne('/api/teacher/textbooks/videos/transcript');
     section.remove(section.videos()[1]?.key ?? 0);
-    gone.flush({ title: null, language: 'en', automatic: true, transcript: 'x', truncated: false });
+    gone.flush({
+      title: null,
+      language: 'en',
+      automatic: true,
+      transcript: 'x',
+      truncated: false,
+      otherTracks: true,
+    });
     typeInto(link, 'https://rutube.ru/video/0123456789abcdef0123456789abcdef/');
     await fixture.whenStable();
     backend.expectNone('/api/teacher/textbooks/videos/transcript');
@@ -363,6 +378,7 @@ describe('VideoSection', () => {
       automatic: false,
       transcript: '[0:00] Длинно',
       truncated: true,
+      otherTracks: true,
     });
     await fixture.whenStable();
     expect(first(section)).toMatchObject({ title: 'Мой', transcript: '[0:00] Длинно' });

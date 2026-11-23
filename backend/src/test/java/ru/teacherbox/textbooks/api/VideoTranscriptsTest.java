@@ -25,18 +25,19 @@ class VideoTranscriptsTest {
         for (int i = 0; i < 300; i++) {
             cues.add(new Cue(i * 30_000L, "x".repeat(500)));
         }
-        VideoTranscripts transcripts = transcripts(new Captions(null, "ru", false, cues));
+        VideoTranscripts transcripts = transcripts(new Captions(null, "ru", false, cues, false));
 
         VideoTranscripts.Transcript transcript = transcripts.youtube("https://youtu.be/aaaaaaaaaaa", null);
 
         assertThat(transcript.truncated()).isTrue();
+        assertThat(transcript.otherTracks()).as("one track").isFalse();
         assertThat(transcript.transcript().length()).isLessThanOrEqualTo(VideoTranscripts.MAX_TRANSCRIPT);
         assertThat(transcript.transcript()).startsWith("[0:00] xxx");
     }
 
     @Test
     void needsSomeText() {
-        VideoTranscripts transcripts = transcripts(new Captions(null, "ru", false, List.of(new Cue(0, "  \n "))));
+        VideoTranscripts transcripts = transcripts(new Captions(null, "ru", false, List.of(new Cue(0, "  \n ")), false));
 
         assertThatThrownBy(() -> transcripts.youtube("https://youtu.be/aaaaaaaaaaa", null))
                 .hasFieldOrPropertyWithValue("code", "video.captions-none");

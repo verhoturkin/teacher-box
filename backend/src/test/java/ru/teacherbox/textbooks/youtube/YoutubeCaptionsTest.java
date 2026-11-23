@@ -60,6 +60,7 @@ class YoutubeCaptionsTest {
         assertThat(found.title()).isEqualTo("Present Simple");
         assertThat(found.language()).isEqualTo("en-GB");
         assertThat(found.automatic()).isFalse();
+        assertThat(found.otherTracks()).isTrue();
         assertThat(found.cues()).containsExactly(new Cue(1360, "We're no\nstrangers"), new Cue(2000, "to love"));
         server.verify();
     }

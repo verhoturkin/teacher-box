@@ -1,9 +1,16 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { aiProvider, answerModels } from '@testing/ai-fixtures';
+import { aiProvider, answerModels, savedPrompt } from '@testing/ai-fixtures';
 import { aStudent, aTag } from '@testing/identity-fixtures';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import {
+  bodyText,
+  buttonByText,
+  hostElement,
+  readableText,
+  requireElement,
+  typeInto,
+} from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { SourceOption } from './data-access/ai.models';
 import { AppliedPlan, LessonPlanAiPanel } from './lesson-plan-ai-panel';
@@ -24,7 +31,10 @@ describe('LessonPlanAiPanel', () => {
   let backend: HttpTestingController;
   let applied: AppliedPlan[];
 
-  async function render(tags = true): Promise<{ panel: LessonPlanAiPanel; host: HTMLElement }> {
+  async function render(
+    tags = true,
+    prompts = [savedPrompt()],
+  ): Promise<{ panel: LessonPlanAiPanel; host: HTMLElement }> {
     TestBed.configureTestingModule({ imports: [LessonPlanAiPanel], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -40,6 +50,7 @@ describe('LessonPlanAiPanel', () => {
       previousNextPlan: null,
     });
     await fixture.whenStable();
+    backend.expectOne('/api/teacher/ai/prompts').flush(prompts);
     answerModels(backend, [aiProvider()]);
     backend.expectOne('/api/teacher/tags').flush(tags ? [aTag()] : []);
     backend
@@ -95,6 +106,38 @@ describe('LessonPlanAiPanel', () => {
       ['Present Perfect', 'insert'],
     ]);
     expect(readableText(host)).not.toContain('Черновик плана');
+  });
+
+  it('takes a saved prompt from «Мои запросы» as the request', async () => {
+    const { panel, host } = await render(true, [
+      savedPrompt({ id: 'any', title: 'Перевод', text: 'Переведи текст' }),
+      savedPrompt(),
+    ]);
+    buttonByText(host, 'Мои запросы').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Тест на 10 вопросов');
+    const search = requireElement(document.body, '.tb-plan-ai__search input', HTMLInputElement);
+    typeInto(search, ' переведи ');
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Тест на 10 вопросов');
+    typeInto(search, 'нет такого');
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Ничего не найдено');
+    typeInto(search, '');
+    await fixture.whenStable();
+    const option = Array.from(
+      document.body.querySelectorAll<HTMLElement>('.tb-plan-ai__option'),
+    ).find((candidate) => candidate.textContent.includes('Перевод'));
+    option?.click();
+    await fixture.whenStable();
+    expect(panel.prompt.value).toBe('Переведи текст');
+  });
+
+  it('offers the library when the teacher has no prompts yet', async () => {
+    const { host } = await render(true, []);
+    buttonByText(host, 'Мои запросы').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Промтов пока нет');
   });
 
   it('replaces the plan, discards a draft and reports a failure', async () => {
