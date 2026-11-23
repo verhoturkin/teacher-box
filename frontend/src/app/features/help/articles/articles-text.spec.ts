@@ -1207,6 +1207,38 @@ const LESSON_CARD: Readonly<Record<string, readonly (readonly [string, string, s
   ],
 };
 
+/** «Прошли по плану» in the lesson summary (466.3): [topic, baseline, now] of the schedule articles. */
+const BY_PLAN: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      'нажмите «Записать итоги» и отправьте текст.',
+      'нажмите «Записать итоги» и отправьте текст.\n\nЕсли к уроку привязан план, поля «Что прошли» сразу не видно: в итогах стоит **«Прошли по плану»**, и ученики увидят именно это. Если что-то пошло иначе, нажмите **«Не всё по плану»** и запишите только отличия — ученик увидит «Прошли по плану» и их. «Черновик» в таком уроке пишет только отличия по вашим словам, а бот спрашивает, что прошло не по плану. Отправить итоги можно и без отличий.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      'choose “Add summary” after recording a completed lesson.',
+      'choose “Add summary” after recording a completed lesson.\n\nIf the lesson has a plan, the summary shows **“Covered as planned”** instead of the “What we covered” field, and that is what students see. If something was different, choose **“Not everything went to plan”** and note only the changes: students see “Covered as planned” followed by them. For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan. You can send the summary without any changes.',
+    ],
+  ],
+  'student.ru': [
+    [
+      'schedule',
+      'Тему уведомлений можно отключить в «Моём аккаунте».',
+      'Тему уведомлений можно отключить в «Моём аккаунте». Если урок шёл по плану, там написано «Прошли по плану», а под «Не по плану» — что было иначе.',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'You can turn off summary notifications in “My account”.',
+      'You can turn off summary notifications in “My account”. If the lesson followed its plan, you will see “Covered as planned”, with anything different listed under “Changes to the plan”.',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -1316,6 +1348,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(PERIOD_SUMMARY[name] ?? []),
       ...(MATERIALS_PANES[name] ?? []),
       ...(LESSON_CARD[name] ?? []),
+      ...(BY_PLAN[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

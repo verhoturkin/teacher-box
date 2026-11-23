@@ -255,7 +255,8 @@ abstract class MarkLessonsChatAction implements ChatAction {
             return ChatStep.done(t.summarySkipped());
         }
         if (input instanceof ChatInput.Choice(String value) && value.equals(WRITE)) {
-            return ChatStep.ask(ChatReply.of(t.askSummary(Lesson.MAX_SUMMARY)), state.withStep("summary"));
+            return ChatStep.ask(ChatReply.of(t.askSummary(Lesson.MAX_SUMMARY, byPlan(state))),
+                    state.withStep("summary"));
         }
         return ChatStep.ask(ChatReply.of(t.offerSummary("").strip()).row(summaryButtons(t)), state);
     }
@@ -264,7 +265,7 @@ abstract class MarkLessonsChatAction implements ChatAction {
         ScheduleChatTexts t = ScheduleChatTexts.of(language);
         Optional<String> text = ChatKit.text(input);
         if (text.isEmpty()) {
-            return ChatStep.ask(ChatReply.of(t.askSummary(Lesson.MAX_SUMMARY)), state);
+            return ChatStep.ask(ChatReply.of(t.askSummary(Lesson.MAX_SUMMARY, byPlan(state))), state);
         }
         if (text.get().length() > Lesson.MAX_SUMMARY) {
             return ChatStep.ask(ChatReply.of(t.tooLong(Lesson.MAX_SUMMARY)), state);
@@ -279,6 +280,11 @@ abstract class MarkLessonsChatAction implements ChatAction {
         } catch (RuntimeException e) {
             return ChatStep.done(t.summaryFailed());
         }
+    }
+
+    /** With a lesson plan the summary holds only the deviations from it (466.3). */
+    private boolean byPlan(ChatState state) {
+        return state.id("lesson").flatMap(lessons::lesson).map(lesson -> lesson.planId() != null).orElse(false);
     }
 
     private ChatStep share(Language language, ChatState state, ChatInput input) {

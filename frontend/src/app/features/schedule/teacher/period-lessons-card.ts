@@ -14,10 +14,10 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { ListRow } from '@shared/ui/list-row';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { MarkdownView } from '@shared/ui/markdown-view';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { LessonsReport, PeriodLesson, PeriodOutcome } from '../data-access/schedule.models';
 import { TagSeverity, formatLessonStart } from '../schedule-labels';
+import { LessonCovered } from '../ui/lesson-covered';
 import { T } from '../i18n/texts';
 
 /** The tag of an outcome: held is success, a charged miss is a warning, the rest stay quiet (our decision). */
@@ -37,7 +37,7 @@ const OUTCOME_SEVERITIES: Readonly<Record<PeriodOutcome, TagSeverity>> = {
  */
 @Component({
   selector: 'tb-period-lessons-card',
-  imports: [Card, EmptyState, ListRow, LoadStateView, MarkdownView, Tag],
+  imports: [Card, EmptyState, ListRow, LoadStateView, LessonCovered, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -77,12 +77,10 @@ const OUTCOME_SEVERITIES: Readonly<Record<PeriodOutcome, TagSeverity>> = {
                     @if (subject(lesson); as subject) {
                       <span class="tb-list__supporting">{{ subject }}</span>
                     }
-                    @if (lesson.summary) {
-                      <div class="tb-period-lessons__covered">
-                        <span class="tb-period-lessons__label">{{ t.covered }}</span>
-                        <tb-markdown [text]="lesson.summary" />
-                      </div>
-                    }
+                    <tb-lesson-covered
+                      [summary]="lesson.summary"
+                      [byPlan]="lesson.planId !== null && lesson.outcome === 'ATTENDED'"
+                    />
                   </div>
                   <div class="tb-list__trail">
                     <p-tag [value]="outcome(lesson)" [severity]="severities[lesson.outcome]" />
@@ -105,18 +103,6 @@ const OUTCOME_SEVERITIES: Readonly<Record<PeriodOutcome, TagSeverity>> = {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
       letter-spacing: var(--tb-tracking-body-m);
-    }
-
-    .tb-period-lessons__covered {
-      margin: var(--tb-space-2) 0 0;
-      overflow-wrap: anywhere;
-    }
-
-    .tb-period-lessons__label {
-      display: block;
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-m);
-      letter-spacing: var(--tb-tracking-label-m);
     }
   `,
 })

@@ -67,8 +67,11 @@ enum ScheduleChatTexts {
         @Override String writeSummary() { return "Записать итоги"; }
         @Override String skipSummary() { return "Пропустить"; }
         @Override String summarySkipped() { return "Хорошо. Итоги можно записать позже на портале."; }
-        @Override String askSummary(int max) {
-            return "Напишите одним сообщением, что прошли на занятии (не больше " + max + " символов).";
+        @Override String askSummary(int max, boolean byPlan) {
+            return byPlan
+                    ? "К занятию привязан план. Напишите одним сообщением, что прошло не по плану (не больше "
+                            + max + " символов)."
+                    : "Напишите одним сообщением, что прошли на занятии (не больше " + max + " символов).";
         }
         @Override String summarySaved(boolean group) {
             return "Итоги сохранены. Отправить " + (group ? "ученикам" : "ученику") + "?";
@@ -259,7 +262,12 @@ enum ScheduleChatTexts {
         @Override String writeSummary() { return "Add summary"; }
         @Override String skipSummary() { return "Skip"; }
         @Override String summarySkipped() { return "Okay. You can write the summary later on the portal."; }
-        @Override String askSummary(int max) { return "Describe what you covered in one message (" + max + " characters maximum)."; }
+        @Override String askSummary(int max, boolean byPlan) {
+            return byPlan
+                    ? "This lesson has a plan. In one message, describe anything that didn't go to plan (" + max
+                            + " characters maximum)."
+                    : "Describe what you covered in one message (" + max + " characters maximum).";
+        }
         @Override String summarySaved(boolean group) {
             return "Summary saved. Send it to the " + (group ? "students" : "student") + "?";
         }
@@ -462,7 +470,8 @@ enum ScheduleChatTexts {
 
     abstract String summarySkipped();
 
-    abstract String askSummary(int max);
+    /** @param byPlan the lesson has a plan: the summary holds only the deviations from it (466.3) */
+    abstract String askSummary(int max, boolean byPlan);
 
     abstract String summarySaved(boolean group);
 

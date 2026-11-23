@@ -135,11 +135,15 @@ code.**
   between `<students>` tags, as data, with the rule «defaults; the teacher's request wins». The rule
   lives in the user prompt, so a rewritten system prompt keeps it. No context — no block.
   `ai.requests` keeps no context.
-- Lesson summary draft (`POST lesson-summary` `{topic ≤ 200?, words ≤ 2000?, assignmentTitles[≤ 20]?}` → `{summary}`,
-  prompts `lesson-summary.*.v1`, since 0.37.0): a short Markdown «Что прошли» from the topic, the titles of the
-  assignments given at the lesson and the teacher's words (between `<words>` tags, data only); at least the topic or the
+- Lesson summary draft (`POST lesson-summary` `{topic ≤ 200?, words ≤ 2000?, planTitle ≤ 200?,
+  assignmentTitles[≤ 20]?}` → `{summary}`, prompts `lesson-summary.system.v1`,
+  `lesson-summary.user.v2`, since 0.37.0): a short Markdown «Что прошли» from the topic, the
+  titles of the assignments given at the lesson and the teacher's words (between `<words>` tags, data only); at least the topic or the
   words must be non-blank. `ai` does not depend on `schedule`: the frontend sends the texts. The enum value
   `LESSON_SUMMARY` is allowed in `system_prompts` by migration `V2__lesson_summary_feature.sql`.
+  With `planTitle` (466.3, the lesson has a plan) `lesson-summary-plan.v1` goes into the user
+  prompt: only what went differently from the plan, and an empty `summary` is an answer — all by
+  the plan (no 422); the frontend then keeps «Прошли по плану» and needs the teacher's words.
 - Lesson plan draft (464.1, roadmap 11 «AI»; `POST lesson-plan` `{prompt ≤ 4000, courseName ≤ 100?,
   lesson? {topic ≤ 500?, previousSummary ≤ 4000?, previousNextPlan ≤ 1000?}, sources?, context?,
   modelId?}`, JSON or `multipart/form-data` as the homework draft — the same `sources`, uploads
@@ -161,8 +165,9 @@ code.**
   `ai.period-invalid`). `PeriodFacts` reads on the server `LessonJournal.ofStudent` →
   `LessonPlans.find(planIds)` (the plan's title, textbook pages, video titles — no body, no
   transcript) → `HomeworkJournal.ofStudent` and writes one line per lesson (date and time in the
-  teacher's zone, minutes, group, title, topic, the student's outcome, «Что прошли» ≤ 1000, the
-  next plan, the plan) and per task (given, due, handed in on time or late, status, grade, the
+  teacher's zone, minutes, group, title, topic, the student's outcome, the plan, «Что прошли» ≤
+  1000 — with a plan «Не по плану: …» or, attended and nothing written, «Прошли по плану» (466.3)
+  — the next plan) and per task (given, due, handed in on time or late, status, grade, the
   review comment ≤ 500); at most 60 lessons and 60 tasks, the newest kept. Nothing in the period —
   422 `ai.period-empty`, no call. Prompts `period-summary.system.v1` (sections «Что прошли»,
   «Задания», «Получается», «Трудности», «Что дальше») and `period-summary.user.v1` (`<lessons>`,

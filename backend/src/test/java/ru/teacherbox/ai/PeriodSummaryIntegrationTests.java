@@ -80,6 +80,7 @@ class PeriodSummaryIntegrationTests {
     @Test
     void summarizesThePeriodFromTheLessonsTheirPlansAndTheHomework() {
         UUID plan = UUID.randomUUID();
+        UUID byPlan = UUID.randomUUID();
         when(lessons.ofStudent(STUDENT, FROM, TO)).thenReturn(List.of(
                 // 21:30 UTC is 00:30 of the next day in Moscow, the teacher's time zone
                 lesson("2026-10-04T21:30:00Z", "Past Simple", null, LessonOutcome.ATTENDED, null,
@@ -89,11 +90,15 @@ class PeriodSummaryIntegrationTests {
                         null),
                 lesson("2026-10-11T15:00:00Z", null, null, LessonOutcome.LATE_CANCELLED, CancelledBy.STUDENT, null,
                         null, null),
-                lesson("2026-10-13T15:00:00Z", null, null, LessonOutcome.MISSED, null, null, null, null),
+                lesson("2026-10-13T15:00:00Z", null, null, LessonOutcome.MISSED, null, "Повторение", null, null),
                 lesson("2026-10-15T15:00:00Z", null, null, LessonOutcome.CANCELLED, CancelledBy.TEACHER, null, null,
                         null),
+                lesson("2026-10-20T15:00:00Z", null, null, LessonOutcome.ATTENDED, null, null, null, byPlan),
+                lesson("2026-10-22T15:00:00Z", null, null, LessonOutcome.ATTENDED, null, "Только чтение", null,
+                        UUID.randomUUID()),
                 lesson("2026-10-30T15:00:00Z", null, null, LessonOutcome.PLANNED, null, null, null, null)));
-        when(plans.find(any())).thenReturn(List.of(new LessonPlanView(plan, "План Past Simple", "Тело плана", null,
+        when(plans.find(any())).thenReturn(List.of(new LessonPlanView(byPlan, "Present Simple", "", null, false,
+                List.of(), List.of()), new LessonPlanView(plan, "План Past Simple", "Тело плана", null,
                 false, List.of(
                         new LessonPlanView.Textbook(UUID.randomUUID(), "Spotlight 5", TextbookKind.TEXTBOOK,
                                 TextbookFormat.PDF, "12-13"),
@@ -122,12 +127,15 @@ class PeriodSummaryIntegrationTests {
         assertThat(request.prompt())
                 .startsWith("Об учениках")
                 .contains("<students>\nКласс: 7\n</students>", "Период: с 01.10.2026 по 31.10.2026.",
-                        "— 05.10.2026 00:30, 60 мин; тема: Past Simple; был на уроке\n  Что прошли: "
-                                + "с".repeat(1_000) + "\n  На следующий урок: Неправильные глаголы\n"
+                        "— 05.10.2026 00:30, 60 мин; тема: Past Simple; был на уроке\n"
                                 + "  План урока: «План Past Simple»; учебники: «Spotlight 5» с. 12-13, «Тетрадь»;"
-                                + " видео: «Routines»\n",
+                                + " видео: «Routines»\n  Не по плану: " + "с".repeat(1_000)
+                                + "\n  На следующий урок: Неправильные глаголы\n",
+                        "— 20.10.2026 18:00, 60 мин; был на уроке\n  План урока: «Present Simple»\n"
+                                + "  Прошли по плану\n",
+                        "— 22.10.2026 18:00, 60 мин; был на уроке\n  Не по плану: Только чтение\n",
                         "— 07.10.2026 18:00, 60 мин, групповой урок; «Урок»; заранее предупредил, что не придёт",
-                        "отменён по просьбе ученика", "отменил поздно, засчитан как пропуск", "; пропустил",
+                        "отменён по просьбе ученика", "отменил поздно, засчитан как пропуск", "; пропустил\n  Что прошли: Повторение\n",
                         "отменён учителем", "не отмечен\n</lessons>",
                         "— «Глаголы»: выдано 05.10.2026, срок 07.10.2026; сдано 06.10.2026 вовремя; принято, оценка 5"
                                 + "\n  Комментарий учителя: " + "к".repeat(500) + "\n",

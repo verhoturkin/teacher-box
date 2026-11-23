@@ -84,6 +84,11 @@ field is empty. “Save” keeps your changes; “Send to student” or “Send 
 If AI is enabled, “Generate draft” uses the lesson topic, the assignments linked to the lesson and your notes to suggest a summary. Review it before sending. Completed \
 lessons with summaries appear in the student or group’s lesson history. In the bot, choose “Add summary” after recording a completed lesson.
 
+If the lesson has a plan, the summary shows **“Covered as planned”** instead of the “What we covered” field, and that is what students see. If \
+something was different, choose **“Not everything went to plan”** and note only the changes: students see “Covered as planned” followed by them. \
+For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan. You can send the summary \
+without any changes.
+
 ## Cancel, restore or delete
 
 Use “Cancel lesson…” in the lesson’s ⋮ menu to enter a reason, say whether the student requested it and decide whether to charge. The lesson remains \

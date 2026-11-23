@@ -353,11 +353,14 @@ export interface HistoryEntry {
   readonly groupName: string | null;
   /** The student's own attendance in a group lesson (a student feed). */
   readonly attendance: Attendance | null;
+  /** «Что прошли»; with `planId` only the deviations from the plan, `null` — all by the plan. */
   readonly summary: string | null;
   readonly nextPlan: string | null;
   readonly summaryUpdatedAt: string | null;
   /** The teacher's private note about the student; absent in a group feed. */
   readonly note: string | null;
+  /** The lesson's plan (466.3); `null` — none. */
+  readonly planId: string | null;
 }
 
 /** Mirrors `LessonOutcome` of `schedule::api`: what a lesson of the period was for the student (ADR-0072). */
@@ -374,7 +377,7 @@ export interface PeriodLesson {
   readonly groupId: string | null;
   readonly outcome: PeriodOutcome;
   readonly cancelledBy: CancelledBy | null;
-  /** «Что прошли», shared by the whole lesson. */
+  /** «Что прошли», shared by the whole lesson; with `planId` only the deviations from the plan. */
   readonly summary: string | null;
   readonly nextPlan: string | null;
   readonly planId: string | null;

@@ -119,8 +119,9 @@ Consumers: `billing` (completion); the schedule itself (`notices/`, below).
 `LessonJournal.ofStudent(studentId, from, to)` (implemented by `ScheduleQueries`) — the student's
 lessons, alone or in a group and whatever the outcome, starting on the days `[from, to]` of the
 instance time zone, oldest first, as `JournalLesson` (start, minutes, title, topic, `groupId`,
-`LessonOutcome` for this student, `cancelledBy` of a cancelled or late-cancelled one, summary,
-next plan, `planId`, `assignmentIds`; no private notes). The outcome: a cancelled lesson —
+`LessonOutcome` for this student, `cancelledBy` of a cancelled or late-cancelled one, summary —
+with `planId` only the deviations from the plan, 466.3 — next plan, `planId`, `assignmentIds`;
+no private notes). The outcome: a cancelled lesson —
 `CANCELLED`; else by the attendance — `EXPECTED` → `PLANNED`, `ATTENDED`, `EXCUSED`, `MISSED` →
 `LATE_CANCELLED` for a lesson with one student cancelled late and charged (`cancelledBy` set),
 `MISSED` otherwise. An unknown student — none; more than 400 days or `to` before `from` — 422
@@ -168,6 +169,14 @@ summary. A prepared lesson counts as touched: `deleteUntouchedOfSeries` (`and pl
 the «this and following» edit, cancel and delete keep it, like a charged one. Moving keeps the
 link; deleting the lesson drops it and leaves the plan in `textbooks` (it cannot listen to
 `schedule`). A deleted plan leaves a dangling id: reads answer 404.
+
+«Прошли по плану» (466.3, roadmap 11 decision 14): with `plan_id` set, `lessons.summary` holds
+only the deviations from the plan, `null` — all by the plan. No flag and no migration: the
+plan's presence decides the meaning. `shareSummary` sends an empty summary of a lesson with a
+plan (`schedule.summary-empty` only without one). Text saved before 0.61.0 on a lesson with a
+plan reads as the deviations: it is kept and shown (the field opens with it), nothing is lost,
+and plans came out in 0.60.0, so such lessons are few. The history feeds carry `planId`; the
+bot asks «что прошло не по плану» for a lesson with a plan.
 
 Lesson homework (462.1, roadmap 11): `lesson_assignments (assignment_id PK, lesson_id → lessons on
 delete cascade, position)` — working assignments of `homework`, many per lesson in the order
@@ -234,7 +243,8 @@ History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, new
 `GET /api/teacher/schedule/students/{id}/history`
 (date, title, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
 `GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
-`GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
+`GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note); every
+entry has `planId` (466.3: with it `summary` is the deviations).
 The student's period report (465.1, roadmap 02 stage B, ADR-0072):
 `GET /api/teacher/schedule/students/{id}/report?from&to` — the lesson journal of the days `[from,
 to]` (instance time zone) with counts `held` (attended), `missed`, `excused`, `cancelledByStudent`,

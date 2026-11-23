@@ -51,6 +51,16 @@ edit, «⋮» or marks.
   uses the topic, the teacher's words and the titles of the lesson's linked assignments
   (`assignmentIds`, in the order linked). Save is enabled only on a difference;
   send saves first; the card stays open. Model switch: [homework](homework.md#ai-pane).
+- **«Прошли по плану»** (466.3): with a plan on the lesson the field is not prefilled and is hidden
+  behind a line «✓ Прошли по плану» (`check_circle` in `primary`, `body-l`; the 18 px icon is our
+  decision) with a hint and a text button «Не всё по плану», which opens an empty field «Что
+  прошло не по плану»; saved deviations open it at once. Send works with an empty field. The AI
+  draft needs the teacher's words, sends the plan title and writes only the deviations; an empty
+  draft leaves the line and says «всё прошло по плану».
+- **Reading it** (`ui/lesson-covered.ts`, `tb-lesson-covered`): the teacher's history tab, the
+  period lessons card, the student's (and parent's) history and lesson sheet show «Прошли по
+  плану» for a held lesson with a plan, then «Не по плану» + the deviations; without a plan —
+  «Что прошли» + the summary.
 
 ## Lesson plan
 

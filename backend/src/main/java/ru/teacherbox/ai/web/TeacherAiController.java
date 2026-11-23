@@ -153,6 +153,7 @@ class TeacherAiController {
     record LessonSummaryRequest(
             @Size(max = 200) @Nullable String topic,
             @Size(max = 2_000) @Nullable String words,
+            @Size(max = 200) @Nullable String planTitle,
             @Size(max = 20) @Nullable List<@NotBlank @Size(max = 200) String> assignmentTitles,
             @Nullable UUID modelId) {
 
@@ -284,7 +285,7 @@ class TeacherAiController {
     @PostMapping("/lesson-summary")
     LessonSummaryDraft lessonSummary(@Valid @RequestBody LessonSummaryRequest request) {
         return assistant.lessonSummary(new LessonSummaryBrief(request.topic(), request.words(),
-                request.assignmentTitles() == null ? List.of() : request.assignmentTitles(), request.modelId()));
+                request.planTitle(), request.assignmentTitles() == null ? List.of() : request.assignmentTitles(), request.modelId()));
     }
 
     /** A draft of a student's period summary; the lessons and homework of the period are read on the server. */

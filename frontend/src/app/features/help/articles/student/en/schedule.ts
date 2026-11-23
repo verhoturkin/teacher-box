@@ -38,7 +38,8 @@ If you cannot attend a group lesson, choose “I can’t attend”. Let your tea
 ## Lesson summaries
 
 When your teacher sends a summary, you will receive a “Lesson summary” notification. Open the lesson and read “What we covered”. Completed lessons \
-are also listed in “Lesson history” on the Schedule page. You can turn off summary notifications in “My account”.
+are also listed in “Lesson history” on the Schedule page. You can turn off summary notifications in “My account”. If the lesson followed its plan, \
+you will see “Covered as planned”, with anything different listed under “Changes to the plan”.
 
 ## Add lessons to your own calendar
 

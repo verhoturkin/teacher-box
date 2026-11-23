@@ -45,7 +45,9 @@ public class AiAssistant {
 
     static final String HOMEWORK_PROMPT = "homework-draft.user.v4";
     static final String REVIEW_PROMPT = "review-draft.user.v2";
-    static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v1";
+    static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v2";
+    /** The rule «only the deviations» of a lesson with a plan (466.3). */
+    static final String LESSON_SUMMARY_PLAN_PROMPT = "lesson-summary-plan.v1";
     static final String QUIZ_PROMPT = "quiz-draft.user.v2";
     static final String LESSON_PLAN_PROMPT = "lesson-plan.user.v1";
     static final String LESSON_PROMPT = "lesson-context.v1";
@@ -86,7 +88,7 @@ public class AiAssistant {
                             "right", property("string", "Справа"))), "Пары соответствия"))));
 
     static final Map<String, Object> LESSON_SUMMARY_SCHEMA = object(
-            "summary", property("string", "Итоги урока в Markdown: что прошли"));
+            "summary", property("string", "Итоги урока в Markdown: что прошли (с планом — только отклонения от него)"));
 
     static final Map<String, Object> LESSON_PLAN_SCHEMA = object(
             "title", property("string", "Короткое название плана, обычно тема урока"),
@@ -319,10 +321,16 @@ public class AiAssistant {
                 .collect(Collectors.joining("\n"))));
     }
 
-    /** A draft of «Что прошли» from the topic, the assignments and the teacher's short words. */
+    /**
+     * A draft of «Что прошли» from the topic, the assignments and the teacher's short words. With a lesson plan only
+     * the deviations from it, and an empty draft is an answer: all went by the plan (466.3).
+     */
     public LessonSummaryDraft lessonSummary(LessonSummaryBrief brief) {
+        String planTitle = brief.planTitle() == null ? "" : brief.planTitle().strip();
+        boolean byPlan = !planTitle.isEmpty();
         Map<String, String> values = Map.of(
                 "topic", orDash(brief.topic()),
+                "plan", byPlan ? prompts.render(LESSON_SUMMARY_PLAN_PROMPT, Map.of("title", planTitle)) + "\n\n" : "",
                 "assignments", brief.assignmentTitles().isEmpty() ? "—"
                         : brief.assignmentTitles().stream().map(title -> "— " + title.strip())
                                 .collect(Collectors.joining("\n")),
@@ -331,7 +339,7 @@ public class AiAssistant {
                 prompts.render(LESSON_SUMMARY_PROMPT, values), "lesson_summary", LESSON_SUMMARY_SCHEMA);
         return call(AiFeature.LESSON_SUMMARY, brief.modelId(), request, LessonSummaryAnswer.class, answer -> {
             String summary = answer.summary() == null ? "" : answer.summary().strip();
-            return summary.isEmpty() ? null : new LessonSummaryDraft(summary);
+            return summary.isEmpty() && !byPlan ? null : new LessonSummaryDraft(summary);
         });
     }
 

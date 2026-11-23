@@ -18,6 +18,7 @@ import ru.teacherbox.homework.api.JournalTask;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.JournalLesson;
 import ru.teacherbox.schedule.api.LessonJournal;
+import ru.teacherbox.schedule.api.LessonOutcome;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 import ru.teacherbox.textbooks.api.LessonPlanView;
 import ru.teacherbox.textbooks.api.LessonPlans;
@@ -92,14 +93,19 @@ class PeriodFacts {
         }
         head.add(outcome(lesson));
         StringBuilder line = new StringBuilder("— ").append(String.join("; ", head));
+        if (plan != null) {
+            line.append("\n  План урока: ").append(plan(plan));
+        }
+        // with a plan the summary holds only the deviations from it, none — all by the plan (466.3)
+        boolean byPlan = lesson.planId() != null;
         if (lesson.summary() != null) {
-            line.append("\n  Что прошли: ").append(AiAssistant.cut(lesson.summary(), MAX_LESSON_SUMMARY));
+            line.append(byPlan ? "\n  Не по плану: " : "\n  Что прошли: ")
+                    .append(AiAssistant.cut(lesson.summary(), MAX_LESSON_SUMMARY));
+        } else if (byPlan && lesson.outcome() == LessonOutcome.ATTENDED) {
+            line.append("\n  Прошли по плану");
         }
         if (lesson.nextPlan() != null) {
             line.append("\n  На следующий урок: ").append(lesson.nextPlan());
-        }
-        if (plan != null) {
-            line.append("\n  План урока: ").append(plan(plan));
         }
         return line.toString();
     }

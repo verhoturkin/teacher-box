@@ -38,6 +38,7 @@ import {
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import { LessonActions } from '../ui/lesson-actions';
 import { LessonCard } from '../ui/lesson-card';
+import { LessonCovered, heldByPlan } from '../ui/lesson-covered';
 import { CalendarRange, CalendarView, ScheduleCalendar } from '../ui/schedule-calendar';
 import { MiniMonth } from '../ui/mini-month';
 import { ScheduleAgenda, weekStart, weekDays } from '../ui/schedule-agenda';
@@ -49,7 +50,6 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { MarkdownView } from '@shared/ui/markdown-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
@@ -95,7 +95,7 @@ export function nextMonday(date: Date): Date {
     TbDialog,
     LessonCard,
     LoadStateView,
-    MarkdownView,
+    LessonCovered,
     PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -327,12 +327,7 @@ export function nextMonday(date: Date): Date {
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ start(entry.startsAt) }}</span>
                         <span class="tb-list__supporting">{{ entryDetails(entry) }}</span>
-                        @if (entry.summary) {
-                          <div class="tb-history__part">
-                            <span class="tb-history__label">{{ t.covered }}</span>
-                            <tb-markdown [text]="entry.summary" />
-                          </div>
-                        }
+                        <tb-lesson-covered [summary]="entry.summary" [byPlan]="byPlan(entry)" />
                       </div>
                     </li>
                   }
@@ -363,12 +358,7 @@ export function nextMonday(date: Date): Date {
       @if (sheetLesson(); as lesson) {
         <div class="tb-student-lesson">
           <tb-lesson-card role="student" [lesson]="cardLesson(lesson)" />
-          @if (sheetSummary(); as summary) {
-            <section class="tb-history__part">
-              <span class="tb-history__label">{{ t.covered }}</span>
-              <tb-markdown [text]="summary" />
-            </section>
-          }
+          <tb-lesson-covered [summary]="sheetSummary()" [byPlan]="byPlan(lesson)" />
           <tb-lesson-actions
             [stacked]="true"
             [requests]="canAsk(lesson)"
@@ -439,18 +429,6 @@ export function nextMonday(date: Date): Date {
 
     tb-filter-chips {
       margin-block-end: var(--tb-space-4);
-    }
-
-    .tb-history__part {
-      margin: var(--tb-space-2) 0 0;
-      overflow-wrap: anywhere;
-    }
-
-    .tb-history__label {
-      display: block;
-      font: var(--tb-type-label-m);
-      letter-spacing: var(--tb-tracking-label-m);
-      color: var(--p-md-on-surface-variant);
     }
 
     .tb-my-schedule-section h2 {
@@ -647,6 +625,8 @@ export class MySchedulePage implements OnInit {
   }
 
   /** «Группа «ОГЭ» · Теорема Виета». */
+  protected readonly byPlan = heldByPlan;
+
   protected entryDetails(entry: HistoryEntry): string {
     return [
       entry.groupId === null

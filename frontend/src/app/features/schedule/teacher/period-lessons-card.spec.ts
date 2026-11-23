@@ -53,6 +53,8 @@ describe('PeriodLessonsCard', () => {
           }),
           periodLesson({ lessonId: 'c', topic: null, outcome: 'MISSED' }),
           periodLesson({ lessonId: 'd', outcome: 'CANCELLED', cancelledBy: 'STUDENT' }),
+          periodLesson({ lessonId: 'e', planId: 'p-1' }),
+          periodLesson({ lessonId: 'f', planId: 'p-2', outcome: 'MISSED' }),
         ],
       }),
     );
@@ -71,6 +73,8 @@ describe('PeriodLessonsCard', () => {
       `${start} Пробный ОГЭ Предупредил`,
       `${start} Пропуск`,
       `${start} Дроби Отменено по просьбе ученика`,
+      `${start} Дроби Прошли по плану Был`,
+      `${start} Дроби Пропуск`,
     ]);
     expect(hostElement(fixture).querySelector('.tb-i-group')).not.toBeNull();
   });

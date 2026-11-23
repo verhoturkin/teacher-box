@@ -18,7 +18,6 @@ import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { MarkdownView } from '@shared/ui/markdown-view';
 import { LessonsOf, ScheduleApi } from '../data-access/schedule-api';
 import {
   HistoryEntry,
@@ -35,6 +34,7 @@ import {
   WEEKDAYS,
   lessonWith,
 } from '../schedule-labels';
+import { LessonCovered, heldByPlan } from '../ui/lesson-covered';
 import { T } from '../i18n/texts';
 
 /** How far ahead the lessons are read (the backend allows 400 days at most). */
@@ -81,7 +81,7 @@ function daysFrom(date: Date, days: number): Date {
  */
 @Component({
   selector: 'tb-student-lessons-tab',
-  imports: [ListRow, Button, Card, EmptyState, LoadStateView, MarkdownView, Tag],
+  imports: [ListRow, Button, Card, EmptyState, LoadStateView, LessonCovered, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -164,12 +164,7 @@ function daysFrom(date: Date, days: number): Date {
                   <div class="tb-list__text">
                     <span class="tb-list__title">{{ start(entry) }}</span>
                     <span class="tb-list__supporting">{{ entryDetails(entry) }}</span>
-                    @if (entry.summary) {
-                      <div class="tb-history__part">
-                        <span class="tb-history__label">{{ t.covered }}</span>
-                        <tb-markdown [text]="entry.summary" />
-                      </div>
-                    }
+                    <tb-lesson-covered [summary]="entry.summary" [byPlan]="byPlan(entry)" />
                     @if (entry.nextPlan) {
                       <p class="tb-history__part">
                         <span class="tb-history__label">{{ t.next }}</span>
@@ -379,6 +374,8 @@ export class StudentLessonsTab {
   }
 
   /** «Группа «ОГЭ» · Теорема Виета»; the group is not named in its own feed. */
+  protected readonly byPlan = heldByPlan;
+
   protected entryDetails(entry: HistoryEntry): string {
     return [
       entry.groupId === null || 'groupId' in this.of()

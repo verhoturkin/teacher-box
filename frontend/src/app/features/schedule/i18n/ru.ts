@@ -141,7 +141,6 @@ export const ru = {
     withdrawn: 'Запрос отозван',
     history: 'История занятий',
     noHistory: 'Проведённых занятий пока нет',
-    covered: 'Что прошли',
     showMore: 'Показать ещё',
     whatHistory: 'история занятий',
   },
@@ -154,7 +153,6 @@ export const ru = {
     cancelledByStudent: (count: number) => `Отменил ученик: ${String(count)}`,
     lateCancellations: (count: number) => `Поздние отмены: ${String(count)}`,
     nothing: 'За этот период занятий нет',
-    covered: 'Что прошли',
     outcomes: {
       PLANNED: 'Не отмечено',
       ATTENDED: 'Был',
@@ -189,7 +187,6 @@ export const ru = {
     history: 'История',
     noHistory: 'Проведённых занятий пока нет',
     showMore: 'Показать ещё',
-    covered: 'Что прошли',
     next: 'Что дальше',
     note: 'Заметка для себя',
   },
@@ -232,6 +229,11 @@ export const ru = {
     saveAnyway: 'Всё равно сохранить',
     failed: 'Не удалось сохранить занятие',
   },
+  covered: {
+    covered: 'Что прошли',
+    byPlan: 'Прошли по плану',
+    offPlan: 'Не по плану',
+  },
   lessonSummary: {
     title: 'Итоги',
     covered: 'Что прошли',
@@ -252,6 +254,16 @@ export const ru = {
       'Что вы хотите отметить? Например: разобрали Past Simple, ошибки в неправильных глаголах.',
     draftNeedsInput: 'Укажите тему урока или напишите пару слов о нём.',
     draftFailed: 'Не удалось составить черновик',
+    byPlan: 'Прошли по плану',
+    byPlanHint: 'К занятию привязан план: ученики увидят «Прошли по плану».',
+    offPlanOpen: 'Не всё по плану',
+    offPlan: 'Что прошло не по плану',
+    offPlanHint: 'Ученики увидят «Прошли по плану» и эти отличия. Пусто — всё по плану.',
+    draftPlanPlaceholder:
+      'Что пошло иначе? Например: не успели упражнение 5, добавили разбор ошибок.',
+    draftNeedsWords: 'Напишите пару слов о том, что пошло не по плану.',
+    draftByPlan: 'По вашим словам всё прошло по плану — отличий нет.',
+    planFallback: 'План урока',
   },
   details: {
     title: 'Занятие',

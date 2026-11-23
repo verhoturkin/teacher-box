@@ -293,7 +293,7 @@ class AssistantIntegrationTests {
                 .bodyJson().satisfies(json -> assertThat(json).extractingPath("$.summary")
                         .isEqualTo("Повторили дроби.\n- сложение"));
         assertThat(llm.lastRequest().prompt()).contains("Дроби", "— Задача 1", "— Задача 2",
-                "<words>\nрешали примеры\n</words>");
+                "<words>\nрешали примеры\n</words>").doesNotContain("план");
         assertThat(thisMonth()).singleElement()
                 .satisfies(logged -> assertThat(logged.feature()).isEqualTo(AiFeature.LESSON_SUMMARY));
     }
@@ -306,6 +306,24 @@ class AssistantIntegrationTests {
         assertThat(llm.lastRequest().prompt()).contains("читали текст").contains("—");
         assertThat(post("/api/teacher/ai/lesson-summary", "{\"topic\": \" \", \"words\": \" \", \"assignmentTitles\": [\"Задача 1\"]}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void withAPlanTheLessonSummaryDraftHoldsOnlyTheDeviationsOrNothing() {
+        llm.answer("{\"summary\": \" Не успели упражнение 5. \"}", 1, 1);
+        llm.answer("{\"summary\": \" \"}", 1, 1);
+        String body = """
+                {"topic": "Дроби", "words": "не успели упр. 5", "planTitle": "Сложение дробей"}
+                """;
+
+        assertThat(post("/api/teacher/ai/lesson-summary", body)).hasStatusOk().bodyJson()
+                .extractingPath("$.summary").isEqualTo("Не успели упражнение 5.");
+        assertThat(llm.lastRequest().prompt()).contains("Тема урока: Дроби\n\nК уроку привязан план «Сложение дробей»",
+                "только то, что прошло не по плану", "\n\nЗадания, выданные на уроке:").doesNotContain("{{");
+        assertThat(post("/api/teacher/ai/lesson-summary", body)).as("all by the plan").hasStatusOk().bodyJson()
+                .extractingPath("$.summary").isEqualTo("");
+        assertThat(post("/api/teacher/ai/lesson-summary", SUMMARY_BODY.replace("}", ", \"planTitle\": \""
+                + "п".repeat(201) + "\"}"))).hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     @Test

@@ -12,7 +12,8 @@ import org.jspecify.annotations.Nullable;
  * @param outcome       what the lesson was for this student
  * @param cancelledBy   who cancelled a {@link LessonOutcome#CANCELLED} or {@link LessonOutcome#LATE_CANCELLED}
  *                      lesson; {@code null} otherwise
- * @param summary       «Что прошли», shared by the whole lesson
+ * @param summary       «Что прошли», shared by the whole lesson; with a {@code planId} only the deviations from
+ *                      the plan, {@code null} — all by the plan (466.3)
  * @param nextPlan      what the teacher planned for the next lesson
  * @param planId        the lesson plan of the lesson ({@code textbooks}); {@code null} — none
  * @param assignmentIds the homework of the lesson ({@code homework})

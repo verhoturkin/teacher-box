@@ -79,8 +79,8 @@ public final class AiViews {
      * @param assignmentTitles titles of the assignments given at the lesson
      * @param modelId          the configured model to ask; {@code null} — the default one
      */
-    public record LessonSummaryBrief(@Nullable String topic, @Nullable String words, List<String> assignmentTitles,
-            @Nullable UUID modelId) {
+    public record LessonSummaryBrief(@Nullable String topic, @Nullable String words, @Nullable String planTitle,
+            List<String> assignmentTitles, @Nullable UUID modelId) {
 
         public LessonSummaryBrief {
             assignmentTitles = List.copyOf(assignmentTitles);

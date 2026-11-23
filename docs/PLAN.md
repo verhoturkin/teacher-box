@@ -64,7 +64,7 @@ Decisions 9–15 of roadmap/11 «UI review of 0.60.0»; every interface change w
 - [x] 466.2 **F** *complex* — the lesson card by time with one-line rows for the plan and the
   homework (decision 13); «⋮» last in the homework editor header (decision 15); help, wiki,
   `docs/screens/schedule.md`, `docs/screens/homework.md`.
-- [ ] 466.3 **B** **F** *complex* — «Прошли по плану» (decision 14): with a plan the summary's
+- [x] 466.3 **B** **F** *complex* — «Прошли по плану» (decision 14): with a plan the summary's
   «Что прошли» holds only the deviations (hidden behind «Не всё по плану»); `LessonJournal` and
   the period-summary facts give the plan's title and the deviations; tests, `docs/modules/*.md`,
   help, wiki.

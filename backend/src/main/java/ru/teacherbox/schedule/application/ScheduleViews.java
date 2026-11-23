@@ -144,6 +144,8 @@ public final class ScheduleViews {
      * One held lesson in a history feed.
      *
      * @param attendance the student's attendance; {@code null} in a group feed
+     * @param summary    «Что прошли»; with a {@code planId} only the deviations from the plan, {@code null} — all by
+     *                   the plan (466.3)
      * @param nextPlan   the teacher's feeds only
      * @param note       the teacher's private note about the student; the student feed never has it
      */
@@ -151,7 +153,7 @@ public final class ScheduleViews {
             LessonStatus status,
             @Nullable UUID groupId, @Nullable String groupName, @Nullable Attendance attendance,
             @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
-            @Nullable String note) {
+            @Nullable String note, @Nullable UUID planId) {
     }
 
     /**

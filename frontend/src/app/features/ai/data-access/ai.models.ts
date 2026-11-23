@@ -128,6 +128,8 @@ export interface ReviewBrief {
 export interface LessonSummaryBrief {
   readonly topic: string | null;
   readonly words: string | null;
+  /** The lesson's plan: the draft holds only the deviations from it, an empty one — all by the plan (466.3). */
+  readonly planTitle?: string | null;
   /** Titles of the assignments given at the lesson. */
   readonly assignmentTitles: readonly string[];
   /** A configured model (ADR-0057); absent — the default one. */

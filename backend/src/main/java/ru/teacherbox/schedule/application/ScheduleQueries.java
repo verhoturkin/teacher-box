@@ -190,7 +190,7 @@ public class ScheduleQueries implements LessonJournal {
                         .filter(participant -> participant.studentId().equals(studentId))
                         .map(participant -> participant.attendance()).findFirst().orElse(null),
                 lesson.summary(), withPlan ? lesson.nextPlan() : null, lesson.summaryUpdatedAt(),
-                notes.containsKey(lesson.id()) ? notes.get(lesson.id()).note() : null)).toList();
+                notes.containsKey(lesson.id()) ? notes.get(lesson.id()).note() : null, lesson.planId())).toList();
     }
 
     /** The teacher's view of what is ahead of a student (group lessons included): series grouped. */
