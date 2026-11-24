@@ -11,7 +11,7 @@
  * indicator of the rail (`nav-indicator`, M3E: secondary-container across the item,
  * on-secondary-container, Label Large emphasized, the filled icon). Hover lays the 8 % state layer,
  * keyboard focus 10 % and the 3 px secondary ring (as the rail). Between the groups: a headline
- * (`tb-nav-menu__headline`, Label Small, upper case — ours, M3 shows Title Small) and a 1 px
+ * (`tb-nav-menu__headline`, Label Small — ours, M3 shows Title Small) and a 1 px
  * outline-variant divider (`hr.tb-nav-menu__divider`, M3 drawer), 12 px from the sides (ours).
  * `tb-nav-menu__item--action` — an item that acts instead of leading somewhere («+ Новый курс»):
  * primary. `tb-nav-menu__more` — the item's «⋮»: shown on the chosen item, on hover and on focus
@@ -78,6 +78,11 @@
   > .tb-drag-handle {
     inline-size: 1.5rem;
     margin-inline-end: calc(-1 * var(--tb-space-1));
+  }
+
+  /* the handle shows no hover tint of its own: the row's state layer is enough */
+  > .tb-drag-handle:hover {
+    background: transparent;
   }
 }
 
@@ -181,7 +186,6 @@
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-s);
   letter-spacing: var(--tb-tracking-label-s);
-  text-transform: uppercase;
 }
 
 .tb-nav-menu__divider {

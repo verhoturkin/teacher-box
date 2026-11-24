@@ -44,7 +44,8 @@ edit, «⋮» or marks.
   homework → plan. The summary is projected into the card (`<ng-content>`), so the sheet keeps one
   body. Both are one-line rows of a segmented list (`ui/lesson-prep.scss`, shared by the three
   sections), or a dashed assist chip «+ План» / «+ ДЗ» (`tb-assist-chip [menu]`) when empty —
-  chips stand side by side, rows take the whole width. No section headings.
+  chips stand side by side below the rows (always after them), rows take the whole width. No
+  section headings.
 - **Summary** (`lesson-summary-section.ts`, 469.3): only for a started, not cancelled lesson (an
   individual lesson marked missed has none), edited in place. One `tb-list` card like «Итог» and
   «ДЗ»: the row «Что прошли» (icon `summarize`, supporting «сохранено · HH:mm») opens the field,
@@ -56,11 +57,11 @@ edit, «⋮» or marks.
   [homework](homework.md#ai-pane).
 - **«По плану | Не всё по плану»** (466.3, 469.2, 469.3): with a plan on the lesson the field is
   not prefilled; the row «Что прошли» ends with an M3 connected button group, single-select and
-  selection required (`p-selectbutton`, as «Итог»; `check_circle` / `edit_note`). «По плану» shows
+  selection required (`p-selectbutton`, as «Итог»; labels only, no icons). «По плану» shows
   no field, takes unsaved deviations off and saves at once; «Не всё по плану» shows an empty field
-  «Что прошло не по плану» with «Черновик»; saved deviations pick it at once. *Our decision:* the
-  group wraps under the heading on a narrow card. The AI draft needs the teacher's words, sends the
-  plan title and writes only the deviations; an empty draft says «всё прошло по плану».
+  «Что прошло не по плану»; saved deviations pick it at once. *Our decision:* the
+  group wraps under the heading on a narrow card. There is no AI «Черновик» for a lesson with a
+  plan: the deviations are the teacher's own words.
 - **Reading it** (`ui/lesson-covered.ts`, `tb-lesson-covered`): the teacher's history tab, the
   period lessons card, the student's (and parent's) history and lesson sheet show «Прошли по
   плану» for a held lesson with a plan, then «Не по плану» + the deviations; without a plan —

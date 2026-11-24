@@ -1003,7 +1003,7 @@ const SUMMARY_CARD: Readonly<Record<string, readonly (readonly [string, string, 
     [
       'schedule',
       'Если к уроку привязан план, поля «Что прошли» сразу не видно: в итогах стоит **«Прошли по плану»**, и ученики увидят именно это. Если что-то пошло иначе, нажмите **«Не всё по плану»** и запишите только отличия — ученик увидит «Прошли по плану» и их. «Черновик» в таком уроке пишет только отличия по вашим словам, а бот спрашивает, что прошло не по плану. Отправить итоги можно и без отличий.',
-      'Если к уроку привязан план, у «Что прошли» есть переключатель **«По плану | Не всё по плану»**. При «По плану» поля нет, и ученики увидят «Прошли по плану». Если что-то пошло иначе, выберите **«Не всё по плану»** и запишите только отличия — ученик увидит «Прошли по плану» и их. «Черновик» в таком уроке пишет только отличия по вашим словам, а бот спрашивает, что прошло не по плану.',
+      'Если к уроку привязан план, у «Что прошли» есть переключатель **«По плану | Не всё по плану»**. При «По плану» поля нет, и ученики увидят «Прошли по плану». Если что-то пошло иначе, выберите **«Не всё по плану»** и запишите только отличия — ученик увидит «Прошли по плану» и их. «Черновика» в таком уроке нет, а бот спрашивает, что прошло не по плану.',
     ],
   ],
   'teacher.en': [
@@ -1020,7 +1020,7 @@ const SUMMARY_CARD: Readonly<Record<string, readonly (readonly [string, string, 
     [
       'schedule',
       'If the lesson has a plan, the summary shows **“Covered as planned”** instead of the “What we covered” field, and that is what students see. If something was different, choose **“Not everything went to plan”** and note only the changes: students see “Covered as planned” followed by them. For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan. You can send the summary without any changes.',
-      'If the lesson has a plan, “What we covered” has a toggle, **“As planned | With changes”**. With “As planned” there is no field, and students see “Covered as planned”. If something was different, choose **“With changes”** and note only the changes: students see “Covered as planned” followed by them. For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan.',
+      'If the lesson has a plan, “What we covered” has a toggle, **“As planned | With changes”**. With “As planned” there is no field, and students see “Covered as planned”. If something was different, choose **“With changes”** and note only the changes: students see “Covered as planned” followed by them. For these lessons there is no “Generate draft”, and the bot asks what didn’t go to plan.',
     ],
   ],
   'student.ru': [

@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { Observable, catchError, map, of, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
@@ -19,8 +19,6 @@ import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { AiApi, AiModelChoice, AiModelPick } from '@features/ai/parts';
 import { AssignmentSummary, HomeworkApi } from '@features/homework/parts';
-import { LessonPlansApi } from '@features/textbooks/parts';
-import { quietContext } from '@core/http/api-error.interceptor';
 import { EditorAutosave } from '@shared/forms/editor-autosave';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson } from '../data-access/schedule.models';
@@ -64,10 +62,6 @@ import { T } from '../i18n/texts';
               (ngModelChange)="pickMode($event)"
               [ariaLabel]="t.covered"
             >
-              <ng-template #item let-option>
-                <i [class]="'tb-i tb-i-' + option.icon" aria-hidden="true"></i>
-                <span>{{ option.label }}</span>
-              </ng-template>
             </p-selectbutton>
           </div>
         }
@@ -78,7 +72,7 @@ import { T } from '../i18n/texts';
             <span class="tb-hint" id="lesson-summary-hint">{{
               byPlan() ? t.offPlanHint : t.coveredHint
             }}</span>
-            @if (aiEnabled()) {
+            @if (aiEnabled() && !byPlan()) {
               <p-button
                 [label]="t.draft"
                 icon="tb-i tb-i-auto_awesome"
@@ -90,7 +84,7 @@ import { T } from '../i18n/texts';
               />
             }
           </div>
-          @if (aiEnabled() && draftOpen()) {
+          @if (aiEnabled() && !byPlan() && draftOpen()) {
             <div class="tb-lesson-summary__draft" id="lesson-summary-draft">
               <label for="lesson-summary-words">{{ t.draftWords }}</label>
               <textarea
@@ -98,18 +92,14 @@ import { T } from '../i18n/texts';
                 id="lesson-summary-words"
                 rows="2"
                 maxlength="2000"
-                [placeholder]="byPlan() ? t.draftPlanPlaceholder : t.draftPlaceholder"
+                [placeholder]="t.draftPlaceholder"
                 [ngModel]="words()"
                 (ngModelChange)="words.set($event)"
               ></textarea>
               @if (error(); as message) {
                 <small class="tb-error" role="alert">{{ message }}</small>
               } @else if (!hasInput(item)) {
-                <small class="tb-hint">{{
-                  byPlan() ? t.draftNeedsWords : t.draftNeedsInput
-                }}</small>
-              } @else if (noDeviations()) {
-                <small class="tb-hint" role="status">{{ t.draftByPlan }}</small>
+                <small class="tb-hint">{{ t.draftNeedsInput }}</small>
               }
               <div class="tb-actions">
                 <tb-ai-model-pick />
@@ -200,7 +190,6 @@ export class LessonSummarySection {
   private readonly ai = inject(AiApi);
   private readonly model = inject(AiModelChoice);
   private readonly homework = inject(HomeworkApi);
-  private readonly plans = inject(LessonPlansApi);
 
   readonly lesson = input.required<ScheduledLesson>();
   /** The lesson as the last write returned it. */
@@ -213,8 +202,6 @@ export class LessonSummarySection {
   protected readonly drafting = signal(false);
   protected readonly drafted = signal(false);
   protected readonly error = signal<string | null>(null);
-  /** The last draft found no deviations from the plan. */
-  protected readonly noDeviations = signal(false);
   private assignments: readonly AssignmentSummary[] | null = null;
 
   // a string, so a lesson given again with the same text keeps what the teacher is typing
@@ -258,16 +245,12 @@ export class LessonSummarySection {
   }
 
   protected hasInput(lesson: ScheduledLesson): boolean {
-    // the deviations come only from the teacher's words
-    return (
-      (!this.byPlan() && (lesson.topic ?? lesson.title ?? '').trim() !== '') ||
-      this.words().trim() !== ''
-    );
+    return (lesson.topic ?? lesson.title ?? '').trim() !== '' || this.words().trim() !== '';
   }
 
   protected readonly modes = [
-    { value: 'BY_PLAN', label: this.t.byPlan, icon: 'check_circle' },
-    { value: 'OFF_PLAN', label: this.t.offPlanOpen, icon: 'edit_note' },
+    { value: 'BY_PLAN', label: this.t.byPlan },
+    { value: 'OFF_PLAN', label: this.t.offPlanOpen },
   ];
 
   /** «По плану» takes the deviations off at once; «Не всё по плану» opens the field. */
@@ -286,15 +269,13 @@ export class LessonSummarySection {
     }
     this.drafting.set(true);
     this.error.set(null);
-    this.noDeviations.set(false);
-    forkJoin({ titles: this.givenAt(lesson), planTitle: this.planTitle(lesson) })
+    this.givenAt(lesson)
       .pipe(
-        switchMap(({ titles, planTitle }) =>
+        switchMap((titles) =>
           this.model.send((modelId) =>
             this.ai.lessonSummary({
               topic: this.blankToNull(lesson.topic ?? lesson.title ?? ''),
               words: this.blankToNull(this.words()),
-              ...(planTitle === null ? {} : { planTitle }),
               assignmentTitles: titles,
               modelId,
             }),
@@ -305,11 +286,6 @@ export class LessonSummarySection {
         next: ({ summary }) => {
           this.drafted.set(true);
           this.drafting.set(false);
-          if (summary.trim() === '') {
-            // with a plan an empty draft means no deviations: the field stays as it is
-            this.noDeviations.set(true);
-            return;
-          }
           this.offPlanOpen.set(true);
           const current = this.summary().trim();
           this.type(current === '' ? summary : `${current}\n\n${summary}`);
@@ -319,17 +295,6 @@ export class LessonSummarySection {
           this.drafting.set(false);
         },
       });
-  }
-
-  /** The title of the lesson's plan for the draft; `null` without a plan, a stand-in if it fails to load. */
-  private planTitle(lesson: ScheduledLesson): Observable<string | null> {
-    if (lesson.planId === null) {
-      return of(null);
-    }
-    return this.plans.get(lesson.planId, quietContext()).pipe(
-      map((plan) => plan.title),
-      catchError(() => of(this.t.planFallback)),
-    );
   }
 
   /**

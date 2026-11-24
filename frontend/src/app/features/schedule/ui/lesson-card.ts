@@ -308,6 +308,11 @@ interface OutcomeOption {
         flex: 1 0 100%;
         min-inline-size: 0;
       }
+
+      /* the chips «+ План» / «+ ДЗ» always come after the rows */
+      > :not(.tb-lesson-prep--row, tb-my-lesson-plan) {
+        order: 1;
+      }
     }
 
     /* without boards the row is not shown */
