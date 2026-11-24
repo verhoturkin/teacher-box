@@ -6,7 +6,6 @@ import { AiProvider } from '@features/ai/parts';
 import { aiModel, aiProvider, answerModels } from '@testing/ai-fixtures';
 import { assignmentSummary } from '@testing/homework-fixtures';
 import { scheduledLesson } from '@testing/schedule-fixtures';
-import { aLessonPlan } from '@testing/textbooks-fixtures';
 import { testProviders } from '@testing/setup';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { LessonSummarySection } from './lesson-summary-section';
@@ -15,7 +14,6 @@ const STATUS = '/api/teacher/ai/status';
 const DRAFT = '/api/teacher/ai/lesson-summary';
 const ASSIGNMENTS = '/api/teacher/homework/assignments';
 const SUMMARY = '/api/teacher/schedule/lessons/l-1/summary';
-const PLAN = '/api/teacher/textbooks/plans/p-1';
 
 describe('LessonSummarySection', () => {
   let fixture: ComponentFixture<LessonSummarySection>;
@@ -273,46 +271,12 @@ describe('LessonSummarySection', () => {
         expect(field('#lesson-summary-text').value).toBe('');
       });
 
-      it('with a plan drafts the deviations from the words and the plan title', async () => {
+      it('with a plan «Не всё по плану» has no AI draft', async () => {
         await open(scheduledLesson({ topic: 'Past Simple', planId: 'p-1' }));
         await mode('Не всё по плану');
-        await openDraft();
-        expect(bodyText()).toContain('Напишите пару слов о том, что пошло не по плану');
-        await type('#lesson-summary-words', 'не успели упр. 5');
 
-        await press('Составить');
-        backend.expectOne(PLAN).flush(aLessonPlan({ id: 'p-1', title: 'Времена' }));
-        await fixture.whenStable();
-        const request = backend.expectOne(DRAFT);
-        expect(request.request.body).toEqual({
-          topic: 'Past Simple',
-          words: 'не успели упр. 5',
-          planTitle: 'Времена',
-          assignmentTitles: [],
-        });
-        request.flush({ summary: 'Не успели упражнение 5.' });
-        await fixture.whenStable();
-
-        expect(field('#lesson-summary-text').value).toBe('Не успели упражнение 5.');
-      });
-
-      it('with a plan an empty draft finds no deviations, a failed plan read a stand-in title', async () => {
-        await open(scheduledLesson({ planId: 'p-1' }));
         expect(bodyText()).not.toContain('Черновик');
-        await mode('Не всё по плану');
-        await openDraft();
-        await type('#lesson-summary-words', 'всё успели');
-
-        await press('Составить');
-        backend.expectOne(PLAN).flush({}, { status: 404, statusText: 'Not Found' });
-        await fixture.whenStable();
-        const request = backend.expectOne(DRAFT);
-        expect(request.request.body).toHaveProperty('planTitle', 'План урока');
-        request.flush({ summary: ' ' });
-        await fixture.whenStable();
-
-        expect(bodyText()).toContain('По вашим словам всё прошло по плану');
-        expect(field('#lesson-summary-text').value).toBe('');
+        expect(field('#lesson-summary-text')).toBeTruthy();
       });
 
       it('writes with the model picked beside «Составить», and with the default one once it is gone', async () => {

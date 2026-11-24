@@ -29,6 +29,10 @@ Feature proposals with detailed plans (progress report, packages, invoices, pare
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
 
+Left from 0.62.3 (470): the dialog and the courses menu were not checked live in the browser;
+`favicon.ico` and `apple-touch-icon.png` were drawn by a script from the glyph outline, the `.ico`
+was not opened in a browser tab.
+
 Left from 0.62.2 (469): the one autosaving «Что прошли» card was not checked live in the
 browser, and the e2e suite was only type-checked.
 

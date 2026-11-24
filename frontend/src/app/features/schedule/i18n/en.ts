@@ -252,9 +252,6 @@ export const en: Translation<typeof ru> = {
       'Students will see “Covered as planned” and these changes. Leave blank if nothing changed.',
     draftPlanPlaceholder:
       'What was different? e.g. Ran out of time for exercise 5; added error correction.',
-    draftNeedsWords: 'Add a few notes on what didn’t go to plan.',
-    draftByPlan: 'From your notes, everything went to plan.',
-    planFallback: 'Lesson plan',
   },
   details: {
     title: 'Lesson',

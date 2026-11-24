@@ -87,7 +87,7 @@ lessons with summaries appear in the student or group’s lesson history. In the
 
 If the lesson has a plan, “What we covered” has a toggle, **“As planned | With changes”**. With “As planned” there is no field, and students see \
 “Covered as planned”. If something was different, choose **“With changes”** and note only the changes: students see “Covered as planned” followed by them. \
-For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan.
+For these lessons there is no “Generate draft”, and the bot asks what didn’t go to plan.
 
 ## Cancel, restore or delete
 

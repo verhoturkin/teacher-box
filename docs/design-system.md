@@ -985,7 +985,7 @@ keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
   mixin (`styles/_mixins.scss`) that `side-nav.scss` uses too: secondary-container across the item,
   springing out from its middle, on-secondary-container, Label Large emphasized, the filled icon;
   hover 8 %, keyboard focus 10 % and the 3 px secondary ring. Groups: a headline
-  (`tb-nav-menu__headline`, Label Small, upper case, on-surface-variant — *ours*, **M3** shows Title
+  (`tb-nav-menu__headline`, Label Small, on-surface-variant — *ours*, **M3** shows Title
   Small) and `hr.tb-nav-menu__divider` (1 px outline-variant, 12 px from the sides; **M3** drawer
   divider). `--action` — an item that acts («+ Новый курс»): primary. `tb-nav-menu__more` — «⋮»
   shown on the chosen item, on hover (where a pointer hovers) and on focus within; always in
